@@ -37,14 +37,17 @@ def generate_bar_chart_png(
     title: str | None = None,
     y_label: str | None = None,
     series_labels: dict[str, str] | None = None,
+    stacked: bool = False,
+    series_colors: list[str] | None = None,
+    y_divisor: float = 1.0,
 ) -> dict[str, Any]:
-    """Generate a grouped bar chart PNG from row data.
+    """Generate a grouped or stacked bar chart PNG from row data.
 
     :param rows: Source rows for the chart.
     :type rows: list[dict[str, Any]]
     :param category_column: Column used for x-axis categories.
     :type category_column: str
-    :param series_columns: Numeric columns to plot as grouped bars.
+    :param series_columns: Numeric columns to plot as bars.
     :type series_columns: list[str]
     :param output_path: Destination path for the PNG file.
     :type output_path: str
@@ -54,6 +57,12 @@ def generate_bar_chart_png(
     :type y_label: str | None
     :param series_labels: Optional display-name mapping for series keys.
     :type series_labels: dict[str, str] | None
+    :param stacked: Render as stacked bars rather than grouped.
+    :type stacked: bool
+    :param series_colors: Optional hex color strings per series in order.
+    :type series_colors: list[str] | None
+    :param y_divisor: Divide all values by this factor before plotting.
+    :type y_divisor: float
     :returns: Metadata about the generated image.
     :rtype: dict[str, Any]
     :raises ValueError: If inputs are invalid.
@@ -106,26 +115,54 @@ def generate_bar_chart_png(
     figure, axis = plt.subplots(figsize=(11, 6), dpi=150)
     try:
         x_positions = list(range(len(categories)))
-        bar_group_width = 0.8
-        per_bar_width = bar_group_width / len(series_columns)
 
-        for index, series_key in enumerate(series_columns):
-            offset = (index - (len(series_columns) - 1) / 2) * per_bar_width
-            bar_positions = [x + offset for x in x_positions]
-            display_name = (
-                series_labels.get(series_key, series_key.replace("_", " ").title())
-                if series_labels
-                else series_key.replace("_", " ").title()
-            )
-            axis.bar(
-                bar_positions,
-                series_values[series_key],
-                width=per_bar_width * 0.95,
-                label=display_name,
-            )
+        if stacked:
+            bottoms = [0.0] * len(categories)
+            for index, series_key in enumerate(series_columns):
+                display_name = (
+                    series_labels.get(series_key, series_key.replace("_", " ").title())
+                    if series_labels
+                    else series_key.replace("_", " ").title()
+                )
+                display_values = [v / y_divisor for v in series_values[series_key]]
+                color = (
+                    series_colors[index]
+                    if series_colors and index < len(series_colors)
+                    else None
+                )
+                bar_kwargs: dict[str, Any] = {
+                    "width": 0.6,
+                    "label": display_name,
+                    "bottom": bottoms,
+                }
+                if color:
+                    bar_kwargs["color"] = color
+                axis.bar(x_positions, display_values, **bar_kwargs)
+                bottoms = [b + v for b, v in zip(bottoms, display_values)]
+        else:
+            bar_group_width = 0.8
+            per_bar_width = bar_group_width / len(series_columns)
+            for index, series_key in enumerate(series_columns):
+                offset = (index - (len(series_columns) - 1) / 2) * per_bar_width
+                bar_positions = [x + offset for x in x_positions]
+                display_name = (
+                    series_labels.get(series_key, series_key.replace("_", " ").title())
+                    if series_labels
+                    else series_key.replace("_", " ").title()
+                )
+                display_values = [v / y_divisor for v in series_values[series_key]]
+                color = (
+                    series_colors[index]
+                    if series_colors and index < len(series_colors)
+                    else None
+                )
+                bar_kwargs = {"width": per_bar_width * 0.95, "label": display_name}
+                if color:
+                    bar_kwargs["color"] = color
+                axis.bar(bar_positions, display_values, **bar_kwargs)
 
         axis.set_xticks(x_positions)
-        axis.set_xticklabels(categories, rotation=20, ha="right")
+        axis.set_xticklabels(categories, rotation=0, ha="center")
         axis.legend(loc="upper right")
         axis.grid(axis="y", linestyle="--", alpha=0.35)
 

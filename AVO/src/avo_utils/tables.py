@@ -167,6 +167,7 @@ def generate_table_png(
     *,
     columns: list[dict[str, str]] | None = None,
     numeric_columns: list[str] | None = None,
+    percent_columns: list[str] | None = None,
     summary_rows: list[dict[str, Any]] | None = None,
     highlight_summary_rows: bool = True,
     column_widths: list[float] | None = None,
@@ -182,6 +183,8 @@ def generate_table_png(
     :type columns: list[dict[str, str]] | None
     :param numeric_columns: Column keys to format/align as numeric.
     :type numeric_columns: list[str] | None
+    :param percent_columns: Column keys to format as integer percentages (e.g. ``"67%"``).
+    :type percent_columns: list[str] | None
     :param summary_rows: Optional extra rows appended at the end.
     :type summary_rows: list[dict[str, Any]] | None
     :param highlight_summary_rows: Whether to style summary rows.
@@ -208,6 +211,8 @@ def generate_table_png(
     column_keys = [item["key"] for item in columns]
     column_labels = [item.get("label", item["key"]) for item in columns]
     numeric_key_set = set(numeric_columns or [])
+    percent_key_set = set(percent_columns or [])
+    right_align_key_set = numeric_key_set | percent_key_set
 
     if column_widths is not None and len(column_widths) != len(column_keys):
         raise ValueError("column_widths must have the same length as columns")
@@ -224,23 +229,21 @@ def generate_table_png(
     output = Path(output_path).expanduser().resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
 
+    def _render_cell(row: dict[str, Any], key: str) -> str:
+        value = row.get(key)
+        if key in percent_key_set:
+            if value is None:
+                return ""
+            return f"{int(round(float(value)))}%"
+        return _format_cell_value(value, key in numeric_key_set)
+
     rendered_rows: list[list[str]] = []
     for row in rows:
-        rendered_rows.append(
-            [
-                _format_cell_value(row.get(key), key in numeric_key_set)
-                for key in column_keys
-            ]
-        )
+        rendered_rows.append([_render_cell(row, key) for key in column_keys])
 
     summary_rows = summary_rows or []
     for row in summary_rows:
-        rendered_rows.append(
-            [
-                _format_cell_value(row.get(key), key in numeric_key_set)
-                for key in column_keys
-            ]
-        )
+        rendered_rows.append([_render_cell(row, key) for key in column_keys])
 
     plt = _get_pyplot_module()
 
@@ -275,7 +278,7 @@ def generate_table_png(
 
             if row_index > 0:
                 key = column_keys[column_index]
-                if key in numeric_key_set:
+                if key in right_align_key_set:
                     cell.set_text_props(ha="right")
                 else:
                     cell.set_text_props(ha="left")
@@ -288,7 +291,7 @@ def generate_table_png(
             ):
                 cell.set_text_props(weight="bold", color="#0b3d4a")
                 cell.set_facecolor("#eef2f1")
-            elif row_index > 0 and column_keys[column_index] in numeric_key_set:
+            elif row_index > 0 and column_keys[column_index] in right_align_key_set:
                 cell.set_text_props(ha="right")
 
         figure.tight_layout()

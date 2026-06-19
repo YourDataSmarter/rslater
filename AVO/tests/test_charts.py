@@ -59,10 +59,25 @@ PINE_AGE_CLASS_TABLE_COLUMNS = [
     {"key": "age_class", "label": "Age Class"},
     {"key": "wy", "label": "WY"},
     {"key": "other_private", "label": "Other Private"},
+    {"key": "total", "label": "Total"},
+    {"key": "pct_wy", "label": "% WY"},
 ]
 
-PINE_AGE_CLASS_NUMERIC_COLUMNS = ["wy", "other_private"]
-PINE_AGE_CLASS_TABLE_WIDTHS = [0.2, 0.2, 0.2]
+PINE_AGE_CLASS_NUMERIC_COLUMNS = ["wy", "other_private", "total"]
+PINE_AGE_CLASS_PERCENT_COLUMNS = ["pct_wy"]
+PINE_AGE_CLASS_TABLE_WIDTHS = [0.14, 0.14, 0.16, 0.14, 0.10]
+
+PINE_VOLUME_TABLE_COLUMNS = [
+    {"key": "age_class", "label": "Age Class"},
+    {"key": "wy", "label": "WY"},
+    {"key": "other_private", "label": "Other Private"},
+    {"key": "total", "label": "Total"},
+    {"key": "pct_wy", "label": "% WY"},
+]
+
+PINE_VOLUME_NUMERIC_COLUMNS = ["wy", "other_private", "total"]
+PINE_VOLUME_PERCENT_COLUMNS = ["pct_wy"]
+PINE_VOLUME_TABLE_WIDTHS = [0.14, 0.14, 0.16, 0.14, 0.10]
 
 
 def load_mock_cover_type_rows() -> list[dict[str, object]]:
@@ -86,6 +101,12 @@ def load_mock_county_summary_rows() -> list[dict[str, object]]:
 def load_mock_pine_age_class_rows() -> list[dict[str, object]]:
     """Load pine acres by age class SQL-like mock rows from JSON test data."""
     data_file = MOCK_DATA_DIR / "pine_acres_by_age_class_rows.json"
+    return json.loads(data_file.read_text(encoding="utf-8"))
+
+
+def load_mock_pine_volume_rows() -> list[dict[str, object]]:
+    """Load pine volume by age class SQL-like mock rows from JSON test data."""
+    data_file = MOCK_DATA_DIR / "pine_volume_by_age_class_rows.json"
     return json.loads(data_file.read_text(encoding="utf-8"))
 
 
@@ -147,7 +168,7 @@ def test_generate_pie_chart_png_missing_column_raises() -> None:
 
 
 def test_generate_bar_chart_png_for_pine_age_class(tmp_path) -> None:
-    """Generic grouped bar chart should render pine age class series."""
+    """Stacked bar chart should render pine age class series with colors."""
     from avo_utils.bars import generate_bar_chart_png
 
     output = str(tmp_path / "pine_age_class_bar.png")
@@ -157,9 +178,12 @@ def test_generate_bar_chart_png_for_pine_age_class(tmp_path) -> None:
         category_column="age_class",
         series_columns=["wy", "other_private"],
         output_path=output,
-        title="Pine Acres by Age Class",
-        y_label="Acres",
+        title="Private Pine Acres by Age Class",
+        y_label="Thousands",
         series_labels={"wy": "WY", "other_private": "Other Private"},
+        stacked=True,
+        series_colors=["#1b5e35", "#78be43"],
+        y_divisor=1000,
     )
 
     import os
@@ -366,32 +390,90 @@ def test_generate_county_summary_table_grand_total(tmp_path) -> None:
     assert totals["wy_ownership_acres"] == pytest.approx(21000.0)
 
 
+def _enrich_pine_rows(
+    rows: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    """Add computed total and pct_wy columns to pine age class rows."""
+    enriched = []
+    for row in rows:
+        wy = float(row["wy"])
+        other = float(row["other_private"])
+        total = wy + other
+        enriched.append(
+            {**row, "total": total, "pct_wy": (wy / total * 100) if total else 0.0}
+        )
+    return enriched
+
+
+def test_generate_pine_volume_bar_chart_png(tmp_path) -> None:
+    """Stacked bar chart should render pine volume series with green colors."""
+    from avo_utils.bars import generate_bar_chart_png
+
+    output = str(tmp_path / "pine_volume_bar.png")
+    rows = load_mock_pine_volume_rows()
+    result = generate_bar_chart_png(
+        rows=rows,
+        category_column="age_class",
+        series_columns=["wy", "other_private"],
+        output_path=output,
+        title="Private Pine Volume by Age Class",
+        y_label="Thousands",
+        series_labels={"wy": "WY", "other_private": "Other Private"},
+        stacked=True,
+        series_colors=["#1b5e35", "#78be43"],
+        y_divisor=1000,
+    )
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["category_count"] == 9
+    assert result["series_count"] == 2
+
+
+def test_generate_pine_volume_table_png(tmp_path) -> None:
+    """Pine volume table should include Total and % WY columns."""
+    from avo_utils.tables import generate_table_png
+
+    output = str(tmp_path / "pine_volume_table.png")
+    rows = _enrich_pine_rows(load_mock_pine_volume_rows())
+
+    result = generate_table_png(
+        rows=rows,
+        output_path=output,
+        columns=PINE_VOLUME_TABLE_COLUMNS,
+        numeric_columns=PINE_VOLUME_NUMERIC_COLUMNS,
+        percent_columns=PINE_VOLUME_PERCENT_COLUMNS,
+        column_widths=PINE_VOLUME_TABLE_WIDTHS,
+        title="Private Pine Volume by Age Class",
+    )
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["summary_row_count"] == 0
+    assert result["data_row_count"] == 9
+
+
 def test_generate_pine_age_class_table_with_total(tmp_path) -> None:
-    """Pine age class table should include a grand total row for WY and Other Private."""
+    """Pine table should include Total/% WY columns and a grand total row."""
     from avo_utils.tables import build_grand_total_row, generate_table_png
 
     output = str(tmp_path / "pine_age_class_table.png")
-    rows = load_mock_pine_age_class_rows()
-    summary_rows, totals = build_grand_total_row(
-        rows,
-        sum_columns=["wy", "other_private"],
-        label_column="age_class",
-        label="Total",
-    )
+    rows = _enrich_pine_rows(load_mock_pine_age_class_rows())
 
     result = generate_table_png(
         rows=rows,
         output_path=output,
         columns=PINE_AGE_CLASS_TABLE_COLUMNS,
         numeric_columns=PINE_AGE_CLASS_NUMERIC_COLUMNS,
-        summary_rows=summary_rows,
+        percent_columns=PINE_AGE_CLASS_PERCENT_COLUMNS,
         column_widths=PINE_AGE_CLASS_TABLE_WIDTHS,
-        title="Pine Acres by Age Class",
+        title="Private Pine Acres by Age Class",
     )
 
     import os
 
     assert os.path.isfile(output)
-    assert result["summary_row_count"] == 1
-    assert totals["wy"] == pytest.approx(3300000.0)
-    assert totals["other_private"] == pytest.approx(2850000.0)
+    assert result["summary_row_count"] == 0
+    assert result["data_row_count"] == 9
