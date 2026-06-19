@@ -1,60 +1,14 @@
-"""Chart image export utilities for AVO."""
+"""Chart compatibility exports for AVO.
+
+New chart implementations live in `pies.py` and `bars.py`.
+This module keeps stable imports for existing call sites.
+"""
 
 from typing import Any
 
-from .io import (
-    DEFAULT_BAR_CHART_OUTPUT_DIR,
-    DEFAULT_CHART_OUTPUT_DIR,
-    DEFAULT_PIE_CHART_OUTPUT_DIR,
-)
-
-
-def generate_pie_chart_png(
-    values: list[float],
-    labels: list[str],
-    output_path: str = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "pie_chart.png"),
-    *,
-    title: str | None = None,
-) -> dict[str, Any]:
-    """Generate a PNG export for a pie chart.
-
-    :param values: Numeric values for chart slices.
-    :type values: list[float]
-    :param labels: Labels mapped to values.
-    :type labels: list[str]
-    :param output_path: Destination path for the PNG file.
-    :type output_path: str
-    :param title: Optional chart title.
-    :type title: str | None
-    :returns: Metadata about the generated image.
-    :rtype: dict[str, Any]
-    :raises ValueError: If inputs are invalid.
-    """
-    pass
-
-
-def generate_bar_chart_png(
-    categories: list[str],
-    values: list[float],
-    output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "bar_chart.png"),
-    *,
-    title: str | None = None,
-) -> dict[str, Any]:
-    """Generate a PNG export for a bar chart.
-
-    :param categories: Category labels for the x-axis.
-    :type categories: list[str]
-    :param values: Numeric values for each category.
-    :type values: list[float]
-    :param output_path: Destination path for the PNG file.
-    :type output_path: str
-    :param title: Optional chart title.
-    :type title: str | None
-    :returns: Metadata about the generated image.
-    :rtype: dict[str, Any]
-    :raises ValueError: If inputs are invalid.
-    """
-    pass
+from .bars import generate_bar_chart_png
+from .io import DEFAULT_CHART_OUTPUT_DIR
+from .pies import generate_pie_chart_png
 
 
 def generate_chart_png(
@@ -78,4 +32,26 @@ def generate_chart_png(
     :rtype: dict[str, Any]
     :raises ValueError: If chart type or inputs are invalid.
     """
-    pass
+    chart_type_key = chart_type.strip().lower()
+
+    if chart_type_key == "pie":
+        return generate_pie_chart_png(
+            rows=data["rows"],
+            label_column=data["label_column"],
+            value_column=data["value_column"],
+            output_path=output_path,
+            title=title,
+        )
+
+    if chart_type_key == "bar":
+        return generate_bar_chart_png(
+            rows=data["rows"],
+            category_column=data["category_column"],
+            series_columns=data["series_columns"],
+            output_path=output_path,
+            title=title,
+            y_label=data.get("y_label"),
+            series_labels=data.get("series_labels"),
+        )
+
+    raise ValueError(f"unsupported chart_type: {chart_type}")

@@ -1,0 +1,119 @@
+[
+    {
+        "business": "STL",
+        "region": "AO",
+        "area": "Coos Bay",
+        "ownership_type": "Fee",
+        "total_stand_acres": 553611,
+        "net_productive_acres": 512487,
+        "harvestable_acres": 487116
+    },
+    {
+        "business": "STL",
+        "region": "AO",
+        "area": "Klamath",
+        "ownership_type": "Lease",
+        "total_stand_acres": 46469,
+        "net_productive_acres": 42000,
+        "harvestable_acres": 21500
+    },
+    {
+        "business": "STL",
+        "region": "CPT",
+        "area": "Florida",
+        "ownership_type": "Timber Res",
+        "total_stand_acres": 7742,
+        "net_productive_acres": 7000,
+        "harvestable_acres": 6000
+    },
+    {
+        "business": "STL",
+        "region": "MIA",
+        "area": "Columbus",
+        "ownership_type": "Fee",
+        "total_stand_acres": 10000,
+        "net_productive_acres": 9500,
+        "harvestable_acres": 9000
+    },
+    {
+        "business": "STL",
+        "region": "MIA",
+        "area": "Columbus",
+        "ownership_type": "Lease",
+        "total_stand_acres": 8000,
+        "net_productive_acres": 7500,
+        "harvestable_acres": 7000
+    },
+    {
+        "business": "STL",
+        "region": "AO",
+        "area": "Astoria",
+        "ownership_type": "Fee",
+        "total_stand_acres": 25000,
+        "net_productive_acres": 24000,
+        "harvestable_acres": 20000
+    },
+    {
+        "business": "STL",
+        "region": "AO",
+        "area": "Tillamook",
+        "ownership_type": "Lease",
+        "total_stand_acres": 18000,
+        "net_productive_acres": 17000,
+        "harvestable_acres": 15000
+    },
+    {
+        "business": "STL",
+        "region": "CPT",
+        "area": "Orlando",
+        "ownership_type": "Fee",
+        "total_stand_acres": 12000,
+        "net_productive_acres": 11000,
+        "harvestable_acres": 10000
+    },
+    {
+        "business": "STL",
+        "region": "CPT",
+        "area": "Miami",
+        "ownership_type": "Timber Res",
+        "total_stand_acres": 9000,
+        "net_productive_acres": 8500,
+        "harvestable_acres": 8000
+    },
+    {
+        "business": "STL",
+        "region": "MIA",
+        "area": "Jacksonville",
+        "ownership_type": "Lease",
+        "total_stand_acres": 7000,
+        "net_productive_acres": 6500,
+        "harvestable_acres": 6000
+    },
+    {
+        "business": "STL",
+        "region": "MIA",
+        "area": "Tampa",
+        "ownership_type": "Fee",
+        "total_stand_acres": 6000,
+        "net_productive_acres": 5800,
+        "harvestable_acres": 5700
+    },
+    {
+        "business": "STL",
+        "region": "AO",
+        "area": "Eugene",
+        "ownership_type": "Lease",
+        "total_stand_acres": 5000,
+        "net_productive_acres": 4800,
+        "harvestable_acres": 4700
+    },
+    {
+        "business": "STL",
+        "region": "AO",
+        "area": "Salem",
+        "ownership_type": "Fee",
+        "total_stand_acres": 4000,
+        "net_productive_acres": 3900,
+        "harvestable_acres": 3800
+    }
+]

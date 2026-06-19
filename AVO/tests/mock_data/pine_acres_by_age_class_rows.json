@@ -1,0 +1,47 @@
+[
+    {
+        "age_class": "0 - 5",
+        "wy": 100000,
+        "other_private": 50000
+    },
+    {
+        "age_class": "6 - 10",
+        "wy": 200000,
+        "other_private": 150000
+    },
+    {
+        "age_class": "11 - 15",
+        "wy": 300000,
+        "other_private": 250000
+    },
+    {
+        "age_class": "16 - 20",
+        "wy": 400000,
+        "other_private": 350000
+    },
+    {
+        "age_class": "21 - 25",
+        "wy": 500000,
+        "other_private": 450000
+    },
+    {
+        "age_class": "26 - 30",
+        "wy": 600000,
+        "other_private": 550000
+    },
+    {
+        "age_class": "31 - 35",
+        "wy": 500000,
+        "other_private": 450000
+    },
+    {
+        "age_class": "36 - 40",
+        "wy": 400000,
+        "other_private": 350000
+    },
+    {
+        "age_class": "40+",
+        "wy": 300000,
+        "other_private": 250000
+    }
+]

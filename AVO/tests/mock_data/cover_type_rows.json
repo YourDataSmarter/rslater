@@ -1,0 +1,56 @@
+[
+    {
+        "business": "WTL",
+        "region": "Lower Columbia",
+        "area": "Cathlamet",
+        "broad_cover_type": "Doug Fir",
+        "total_stand_acres": 42959,
+        "net_productive_acres": 41000,
+        "harvestable_acres": 26425
+    },
+    {
+        "business": "WTL",
+        "region": "NW Oregon",
+        "area": "Tillamook",
+        "broad_cover_type": "White Wood",
+        "total_stand_acres": 12000,
+        "net_productive_acres": 11000,
+        "harvestable_acres": 8000
+    },
+    {
+        "business": "WTL",
+        "region": "Willamette Valley",
+        "area": "Springfield",
+        "broad_cover_type": "Doug Fir",
+        "total_stand_acres": 10195,
+        "net_productive_acres": 9500,
+        "harvestable_acres": 8195
+    },
+    {
+        "business": "WTL",
+        "region": "Willamette Valley",
+        "area": "Albany",
+        "broad_cover_type": "White Wood",
+        "total_stand_acres": 9000,
+        "net_productive_acres": 8500,
+        "harvestable_acres": 7000
+    },
+    {
+        "business": "WTL",
+        "region": "Coastal",
+        "area": "Astoria",
+        "broad_cover_type": "Other",
+        "total_stand_acres": 4000,
+        "net_productive_acres": 3900,
+        "harvestable_acres": 3500
+    },
+    {
+        "business": "WTL",
+        "region": "Eastern",
+        "area": "Pendleton",
+        "broad_cover_type": "Other",
+        "total_stand_acres": 3742,
+        "net_productive_acres": 3600,
+        "harvestable_acres": 3200
+    }
+]

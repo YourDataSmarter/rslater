@@ -1,0 +1,22 @@
+[
+    {
+        "woodbasket": "Woodbasket A",
+        "business": "STL",
+        "region": "AO",
+        "state": "AR",
+        "county": "ABC",
+        "state_county_fip": "12345",
+        "acres_within_woodbasket": 20000,
+        "wy_ownership_acres": 1000
+    },
+    {
+        "woodbasket": "Woodbasket B",
+        "business": "STL",
+        "region": "AO",
+        "state": "AR",
+        "county": "ABC",
+        "state_county_fip": "12345",
+        "acres_within_woodbasket": 40000,
+        "wy_ownership_acres": 20000
+    }
+]

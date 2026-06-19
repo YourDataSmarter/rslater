@@ -1,0 +1,24 @@
+# Build / packaging artifacts
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Pip editable install
+__editable__.*
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

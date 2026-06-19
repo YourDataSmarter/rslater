@@ -41,15 +41,21 @@ AVO/
 		charts/
 			pie/
 			bar/
+			tables/
 		csv/
 	src/
 		avo_utils/
 			__init__.py
 			maps.py        # web map to PNG helpers
-			charts.py      # pie/bar/other chart PNG helpers
+			charts.py      # compatibility wrapper + generic chart dispatcher
+			pies.py        # pie chart PNG helpers
+			bars.py        # bar chart PNG helpers
+			tables.py      # table PNG helpers
 			exports.py     # CSV export helpers
 			io.py          # shared file/path/output helpers
 	tests/
+		mock_data/
+			cover_type_rows.json
 		test_maps.py
 		test_charts.py
 		test_exports.py
@@ -59,6 +65,8 @@ AVO/
 
 - `generate_webmap_png(...)`
 - `generate_pie_chart_png(...)`
+- `generate_table_png(...)`
+- `build_cover_type_summary_rows(...)` (optional edge-case helper for this specific table)
 - `generate_bar_chart_png(...)`
 - `generate_chart_png(...)` (generic chart dispatcher)
 - `export_csv(...)`
@@ -78,9 +86,11 @@ Recommended behavior for utility functions:
 - Location status: temporary
 - API status: expected to evolve while requirements are refined
 - Module scaffold status: created (`src/avo_utils` and `tests`)
-- Function status: signatures and docstrings are in place; logic is intentionally not implemented yet (`pass` stubs)
+- Function status: `generate_pie_chart_png`, `generate_bar_chart_png`, and `generate_table_png` are implemented; table logic supports optional summary rows and edge-case helper totals in `src/avo_utils/tables.py`
+- Test data status: chart mock rows moved to external JSON under `tests/mock_data/`
+- Pie and table chart tests: implemented and passing against file-based mock data
 - Local output folders: created under `output/` for webmaps, charts, and csv
-- Default output paths: wired in stubs through shared constants in `src/avo_utils/io.py`
+- Default output paths: wired through shared constants in `src/avo_utils/io.py`
 
 ## README Maintenance
 
