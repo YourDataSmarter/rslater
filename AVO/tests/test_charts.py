@@ -110,6 +110,12 @@ def load_mock_pine_volume_rows() -> list[dict[str, object]]:
     return json.loads(data_file.read_text(encoding="utf-8"))
 
 
+def load_mock_portfolio_attributes() -> dict[str, object]:
+    """Load portfolio attributes mock data from JSON test data."""
+    data_file = MOCK_DATA_DIR / "portfolio_attributes.json"
+    return json.loads(data_file.read_text(encoding="utf-8"))
+
+
 def test_generate_pie_chart_png_aggregates_labels(tmp_path) -> None:
     """Rows with the same label should be summed into one slice."""
     from avo_utils.charts import generate_pie_chart_png
@@ -455,6 +461,21 @@ def test_generate_pine_volume_table_png(tmp_path) -> None:
     assert result["data_row_count"] == 9
 
 
+def test_generate_portfolio_attributes_table_png_creates_file(tmp_path) -> None:
+    """Portfolio attributes table PNG should be created with all sections."""
+    from avo_utils.tables import generate_portfolio_attributes_table_png
+
+    output = str(tmp_path / "portfolio_attributes_table.png")
+    data = load_mock_portfolio_attributes()
+    result = generate_portfolio_attributes_table_png(data=data, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["section_count"] == 4
+    assert result["title"] == "Sample Woodbasket Name"
+
+
 def test_generate_pine_age_class_table_with_total(tmp_path) -> None:
     """Pine table should include Total/% WY columns and a grand total row."""
     from avo_utils.tables import build_grand_total_row, generate_table_png
@@ -477,3 +498,265 @@ def test_generate_pine_age_class_table_with_total(tmp_path) -> None:
     assert os.path.isfile(output)
     assert result["summary_row_count"] == 0
     assert result["data_row_count"] == 9
+
+
+PERCENT_ACRES_TABLE_COLUMNS = [
+    {"key": "region", "label": ""},
+    {"key": "total", "label": "Total Stand Ac"},
+    {"key": "count_1", "label": "1"},
+    {"key": "count_2", "label": "2"},
+    {"key": "count_3", "label": "3"},
+    {"key": "count_4", "label": "4"},
+    {"key": "count_5plus", "label": "5+"},
+]
+
+PERCENT_ACRES_NUMERIC_COLUMNS = ["total"]
+PERCENT_ACRES_TABLE_WIDTHS = [0.10, 0.14, 0.10, 0.10, 0.10, 0.10, 0.10]
+
+
+def load_mock_percent_acres_rows() -> list[dict[str, object]]:
+    """Load percent acres mock rows from JSON test data."""
+    data_file = MOCK_DATA_DIR / "percent_acres_rows.json"
+    return json.loads(data_file.read_text(encoding="utf-8"))
+
+
+def test_build_percent_acres_rows_flattens_counts() -> None:
+    """build_percent_acres_rows should expand counts list into named columns."""
+    from avo_utils.tables import build_percent_acres_rows
+
+    raw_rows = load_mock_percent_acres_rows()
+    rows = build_percent_acres_rows(raw_rows)
+
+    assert len(rows) == 6
+    first = rows[0]
+    assert first["region"] == "AO"
+    assert first["total"] == 1030646
+    assert first["count_1"] == "21%"
+    assert first["count_2"] == "6%"
+    assert first["count_3"] == "1%"
+    assert first["count_4"] == "0%"
+    assert first["count_5plus"] == "0.1%"
+
+
+def test_generate_percent_acres_table_png_creates_file(tmp_path) -> None:
+    """Percent acres table PNG should be created with a Grand Total summary row."""
+    from avo_utils.tables import build_grand_total_row, build_percent_acres_rows, generate_table_png
+
+    output = str(tmp_path / "percent_acres_table.png")
+    raw_rows = load_mock_percent_acres_rows()
+    rows = build_percent_acres_rows(raw_rows)
+
+    grand_total_rows, totals = build_grand_total_row(
+        rows,
+        sum_columns=["total"],
+        label_column="region",
+        label="Grand Total",
+    )
+    grand_total_rows[0].update({
+        "count_1": "30%",
+        "count_2": "13%",
+        "count_3": "4%",
+        "count_4": "1%",
+        "count_5plus": "0%",
+    })
+
+    result = generate_table_png(
+        rows=rows,
+        output_path=output,
+        columns=PERCENT_ACRES_TABLE_COLUMNS,
+        numeric_columns=PERCENT_ACRES_NUMERIC_COLUMNS,
+        summary_rows=grand_total_rows,
+        column_widths=PERCENT_ACRES_TABLE_WIDTHS,
+        title="% of Total Productive Acres with AVO Opportunities Defined",
+    )
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["data_row_count"] == 6
+    assert result["summary_row_count"] == 1
+    assert totals["total"] == pytest.approx(6658364.0)
+
+
+def test_generate_percent_acres_table_png_to_output_dir() -> None:
+    """Generate percent acres table PNG to the real output directory."""
+    from avo_utils.io import DEFAULT_CHART_OUTPUT_DIR
+    from avo_utils.tables import build_grand_total_row, build_percent_acres_rows, generate_table_png
+
+    output = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "mock_percent_acres_table.png")
+    raw_rows = load_mock_percent_acres_rows()
+    rows = build_percent_acres_rows(raw_rows)
+
+    grand_total_rows, _ = build_grand_total_row(
+        rows,
+        sum_columns=["total"],
+        label_column="region",
+        label="Grand Total",
+    )
+    grand_total_rows[0].update({
+        "count_1": "30%",
+        "count_2": "13%",
+        "count_3": "4%",
+        "count_4": "1%",
+        "count_5plus": "0%",
+    })
+
+    result = generate_table_png(
+        rows=rows,
+        output_path=output,
+        columns=PERCENT_ACRES_TABLE_COLUMNS,
+        numeric_columns=PERCENT_ACRES_NUMERIC_COLUMNS,
+        summary_rows=grand_total_rows,
+        column_widths=PERCENT_ACRES_TABLE_WIDTHS,
+        title="% of Total Productive Acres with AVO Opportunities Defined",
+    )
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["data_row_count"] == 6
+    assert result["summary_row_count"] == 1
+
+
+def load_mock_large_landowner_rows() -> list[dict[str, object]]:
+    """Load large landowner mock rows from JSON test data."""
+    data_file = MOCK_DATA_DIR / "large_landowner_rows.json"
+    return json.loads(data_file.read_text(encoding="utf-8"))
+
+
+def test_build_large_landowner_pie_rows_top10_and_other() -> None:
+    """Large landowner pie rows should include top 10 plus an Other row."""
+    from avo_utils.pies import build_large_landowner_pie_rows
+
+    rows = load_mock_large_landowner_rows()
+    pie_rows, label_colors = build_large_landowner_pie_rows(rows)
+
+    assert len(pie_rows) == 11
+    assert pie_rows[0]["name"] == "Weyerhaeuser"
+    assert pie_rows[1]["name"] == "Government/Tribal"
+    assert pie_rows[-1]["name"] == "Other"
+    assert pie_rows[-1]["total_acres"] == pytest.approx(287000.0)
+    assert label_colors["Weyerhaeuser"] == "#016a3a"
+    assert label_colors["Government/Tribal"] == "#efe8be"
+    assert label_colors["Other"] == "#9e9e9e"
+
+
+def test_generate_large_landowner_pie_chart_png_creates_file(tmp_path) -> None:
+    """Large landowner pie chart should render top 10 plus Other."""
+    from avo_utils.pies import generate_large_landowner_pie_chart_png
+
+    output = str(tmp_path / "large_landowner_pie.png")
+    rows = load_mock_large_landowner_rows()
+    result = generate_large_landowner_pie_chart_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["label_count"] == 11
+    assert result["value_total"] == pytest.approx(6076400.0)
+    assert result["title"] == "Largest Landowners (ac.)"
+
+
+def test_generate_large_landowner_pie_chart_png_to_output_dir() -> None:
+    """Generate large landowner pie chart PNG to the real output directory."""
+    from avo_utils.io import DEFAULT_PIE_CHART_OUTPUT_DIR
+    from avo_utils.pies import generate_large_landowner_pie_chart_png
+
+    output = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "mock_large_landowners_pie_chart.png")
+    rows = load_mock_large_landowner_rows()
+    result = generate_large_landowner_pie_chart_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["label_count"] == 11
+
+
+def test_build_large_landowner_bar_data_shapes_rows() -> None:
+    """Large landowner bar data should shape 9 woodbasket rows and include WY series."""
+    from avo_utils.bars import build_large_landowner_bar_data
+
+    rows = load_mock_large_landowner_rows()
+    chart_rows, series_columns, _, series_colors = build_large_landowner_bar_data(rows)
+
+    assert len(chart_rows) == 9
+    assert chart_rows[0]["woodbasket"] == "Longview"
+    assert "Weyerhaeuser" in series_columns
+    assert "Government/Tribal" not in series_columns
+    assert len(series_columns) == len(series_colors)
+    assert chart_rows[0]["Weyerhaeuser"] == pytest.approx(310000.0)
+
+
+def test_generate_large_landowner_bar_chart_png_creates_file(tmp_path) -> None:
+    """Large landowner grouped bar chart PNG should be created successfully."""
+    from avo_utils.bars import generate_large_landowner_bar_chart_png
+
+    output = str(tmp_path / "large_landowner_bar.png")
+    rows = load_mock_large_landowner_rows()
+    result = generate_large_landowner_bar_chart_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["category_count"] == 9
+    assert result["title"] == "Top Five Private Landowners per Woodbasket"
+
+
+def test_generate_large_landowner_bar_chart_png_to_output_dir() -> None:
+    """Generate large landowner grouped bar PNG to the real output directory."""
+    from avo_utils.bars import generate_large_landowner_bar_chart_png
+    from avo_utils.io import DEFAULT_BAR_CHART_OUTPUT_DIR
+
+    output = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "mock_large_landowners_bar_chart.png")
+    rows = load_mock_large_landowner_rows()
+    result = generate_large_landowner_bar_chart_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["category_count"] == 9
+
+
+def test_build_large_landowner_table_rows_shapes_owner_and_mill_rows() -> None:
+    """Large landowner table rows should include top owners and nested mill rows."""
+    from avo_utils.tables import build_large_landowner_table_rows
+
+    rows = load_mock_large_landowner_rows()
+    table_rows = build_large_landowner_table_rows(rows)
+
+    assert len(table_rows) == 14
+    assert table_rows[0]["rank"] == 1
+    assert table_rows[0]["landowner_name"] == "Weyerhaeuser"
+    assert table_rows[0]["total_acres_owned"] == pytest.approx(1882500.0)
+    assert table_rows[1]["mill_name"] == "Mill A"
+    assert table_rows[2]["mill_name"] == "Mill B"
+
+
+def test_generate_large_landowner_table_png_creates_file(tmp_path) -> None:
+    """Large landowner table PNG should be generated with top-10 owner rows."""
+    from avo_utils.tables import generate_large_landowner_table_png
+
+    output = str(tmp_path / "large_landowner_table.png")
+    rows = load_mock_large_landowner_rows()
+    result = generate_large_landowner_table_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["data_row_count"] == 14
+    assert result["title"] == "Landowner Level Data"
+
+
+def test_generate_large_landowner_table_png_to_output_dir() -> None:
+    """Generate large landowner table PNG to the real output directory."""
+    from avo_utils.io import DEFAULT_CHART_OUTPUT_DIR
+    from avo_utils.tables import generate_large_landowner_table_png
+
+    output = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "mock_large_landowners_table.png")
+    rows = load_mock_large_landowner_rows()
+    result = generate_large_landowner_table_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["data_row_count"] == 14

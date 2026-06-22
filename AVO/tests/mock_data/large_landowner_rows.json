@@ -1,0 +1,204 @@
+[
+    {
+        "name": "Weyerhaeuser",
+        "type": "WY",
+        "total_acres": 1882500,
+        "woodbasket_acres": {
+            "Longview": 310000,
+            "Cathlamet": 180000,
+            "NW Oregon": 295000,
+            "Mid Coast": 220000,
+            "Snow Peak": 180000,
+            "Clackamas": 245000,
+            "Springfield": 142000,
+            "Coos Bay": 195000,
+            "South Valley": 115500
+        },
+        "mills": [
+            { "object_id": 1, "mill_name": "Mill A", "parent_company": "Weyerhaeuser", "primary_mill_type": "Lumber", "species": "DF", "mi_species": "Douglas Fir", "business": "STL", "city": "Longview", "state": "WA", "county": "Cowlitz", "ils_id": "OR12345", "forisk_id": "WA12345", "lims_destination_id": "9B1745" },
+            { "object_id": 2, "mill_name": "Mill B", "parent_company": "Weyerhaeuser", "primary_mill_type": "Lumber", "species": "DF", "mi_species": "Douglas Fir", "business": "STL", "city": "Warrenton", "state": "OR", "county": "Clatsop", "ils_id": "OR23456", "forisk_id": "OR23456", "lims_destination_id": "B56471" }
+        ]
+    },
+    {
+        "name": "Government/Tribal",
+        "type": "Gov/Tribal",
+        "total_acres": 1250000,
+        "woodbasket_acres": {
+            "Longview": 145000,
+            "Cathlamet": 120000,
+            "NW Oregon": 210000,
+            "Mid Coast": 180000,
+            "Snow Peak": 160000,
+            "Clackamas": 190000,
+            "Springfield": 105000,
+            "Coos Bay": 75000,
+            "South Valley": 65000
+        }
+    },
+    {
+        "name": "Roseburg Resources",
+        "type": "Private",
+        "total_acres": 512400,
+        "woodbasket_acres": {
+            "Longview": 0,
+            "Cathlamet": 12000,
+            "NW Oregon": 55000,
+            "Mid Coast": 98000,
+            "Snow Peak": 72000,
+            "Clackamas": 85000,
+            "Springfield": 110000,
+            "Coos Bay": 62400,
+            "South Valley": 18000
+        },
+        "mills": [
+            { "object_id": 3, "mill_name": "Roseburg Plywood", "parent_company": "Roseburg Resources", "primary_mill_type": "Plywood", "species": "DF", "mi_species": "Douglas Fir", "business": "STL", "city": "Roseburg", "state": "OR", "county": "Douglas", "ils_id": "OR34567", "forisk_id": "OR34567", "lims_destination_id": "547896" }
+        ]
+    },
+    {
+        "name": "Stimson Lumber Company",
+        "type": "Private",
+        "total_acres": 445000,
+        "woodbasket_acres": {
+            "Longview": 22000,
+            "Cathlamet": 18000,
+            "NW Oregon": 60000,
+            "Mid Coast": 70000,
+            "Snow Peak": 80000,
+            "Clackamas": 90000,
+            "Springfield": 65000,
+            "Coos Bay": 25000,
+            "South Valley": 15000
+        },
+        "mills": [
+            { "object_id": 4, "mill_name": "Stimson Forest Grove", "parent_company": "Stimson Lumber Company", "primary_mill_type": "Lumber", "species": "DF", "mi_species": "Douglas Fir", "business": "STL", "city": "Forest Grove", "state": "OR", "county": "Washington", "ils_id": "OR45678", "forisk_id": "OR45678", "lims_destination_id": "541258" }
+        ]
+    },
+    {
+        "name": "Manulife THO",
+        "type": "Private",
+        "total_acres": 398000,
+        "woodbasket_acres": {
+            "Longview": 45000,
+            "Cathlamet": 30000,
+            "NW Oregon": 70000,
+            "Mid Coast": 60000,
+            "Snow Peak": 55000,
+            "Clackamas": 65000,
+            "Springfield": 48000,
+            "Coos Bay": 15000,
+            "South Valley": 10000
+        }
+    },
+    {
+        "name": "Cascade Timber Consulting",
+        "type": "Private",
+        "total_acres": 335000,
+        "woodbasket_acres": {
+            "Longview": 28000,
+            "Cathlamet": 22000,
+            "NW Oregon": 52000,
+            "Mid Coast": 55000,
+            "Snow Peak": 62000,
+            "Clackamas": 72000,
+            "Springfield": 28000,
+            "Coos Bay": 10000,
+            "South Valley": 6000
+        }
+    },
+    {
+        "name": "Nuveen FMO",
+        "type": "Private",
+        "total_acres": 288500,
+        "woodbasket_acres": {
+            "Longview": 32000,
+            "Cathlamet": 25000,
+            "NW Oregon": 45000,
+            "Mid Coast": 50000,
+            "Snow Peak": 48000,
+            "Clackamas": 55000,
+            "Springfield": 22000,
+            "Coos Bay": 8000,
+            "South Valley": 3500
+        }
+    },
+    {
+        "name": "Sierra Pacific",
+        "type": "Private",
+        "total_acres": 255000,
+        "woodbasket_acres": {
+            "Longview": 18000,
+            "Cathlamet": 12000,
+            "NW Oregon": 40000,
+            "Mid Coast": 45000,
+            "Snow Peak": 52000,
+            "Clackamas": 48000,
+            "Springfield": 30000,
+            "Coos Bay": 6000,
+            "South Valley": 4000
+        }
+    },
+    {
+        "name": "Forest Investment Associates FMO",
+        "type": "Private",
+        "total_acres": 225000,
+        "woodbasket_acres": {
+            "Longview": 15000,
+            "Cathlamet": 10000,
+            "NW Oregon": 35000,
+            "Mid Coast": 40000,
+            "Snow Peak": 42000,
+            "Clackamas": 45000,
+            "Springfield": 25000,
+            "Coos Bay": 9000,
+            "South Valley": 4000
+        }
+    },
+    {
+        "name": "Campbell Global TMO",
+        "type": "Private",
+        "total_acres": 198000,
+        "woodbasket_acres": {
+            "Longview": 12000,
+            "Cathlamet": 8000,
+            "NW Oregon": 30000,
+            "Mid Coast": 35000,
+            "Snow Peak": 38000,
+            "Clackamas": 40000,
+            "Springfield": 20000,
+            "Coos Bay": 10000,
+            "South Valley": 5000
+        }
+    },
+    {
+        "name": "Hampton Lumber",
+        "type": "Private",
+        "total_acres": 155000,
+        "woodbasket_acres": {
+            "Longview": 8000,
+            "Cathlamet": 5000,
+            "NW Oregon": 22000,
+            "Mid Coast": 28000,
+            "Snow Peak": 30000,
+            "Clackamas": 32000,
+            "Springfield": 18000,
+            "Coos Bay": 8000,
+            "South Valley": 4000
+        }
+    },
+    {
+        "name": "Longview Timber",
+        "type": "Private",
+        "total_acres": 132000,
+        "woodbasket_acres": {
+            "Longview": 55000,
+            "Cathlamet": 30000,
+            "NW Oregon": 20000,
+            "Mid Coast": 10000,
+            "Snow Peak": 5000,
+            "Clackamas": 4000,
+            "Springfield": 4000,
+            "Coos Bay": 2000,
+            "South Valley": 2000
+        }
+    }
+]

@@ -4,6 +4,12 @@ import importlib
 from pathlib import Path
 from typing import Any
 
+from .configs import (
+    GOV_TRIBAL_COLOR,
+    NON_TOP10_COLOR,
+    PRIVATE_PALETTE,
+    WEYERHAEUSER_COLOR,
+)
 from .io import DEFAULT_BAR_CHART_OUTPUT_DIR
 
 
@@ -191,3 +197,196 @@ def generate_bar_chart_png(
         }
     finally:
         plt.close(figure)
+
+
+def _build_large_landowner_global_color_map(
+    rows: list[dict[str, Any]],
+    *,
+    name_column: str,
+    type_column: str,
+    total_column: str,
+    top_n: int = 10,
+) -> dict[str, str]:
+    """Build owner-to-color mapping using the same top-10 rules as the pie chart."""
+    sorted_rows = sorted(rows, key=lambda row: float(row[total_column]), reverse=True)
+    top_rows = sorted_rows[:top_n]
+
+    color_map: dict[str, str] = {}
+    private_palette_index = 0
+    for row in top_rows:
+        owner_name = str(row[name_column])
+        owner_type = str(row.get(type_column, "")).strip()
+
+        if owner_type == "WY":
+            color_map[owner_name] = WEYERHAEUSER_COLOR
+        elif owner_type == "Gov/Tribal":
+            color_map[owner_name] = GOV_TRIBAL_COLOR
+        else:
+            color = PRIVATE_PALETTE[private_palette_index % len(PRIVATE_PALETTE)]
+            color_map[owner_name] = color
+            private_palette_index += 1
+
+    return color_map
+
+
+def build_large_landowner_bar_data(
+    rows: list[dict[str, Any]],
+    *,
+    name_column: str = "name",
+    type_column: str = "type",
+    total_column: str = "total_acres",
+    woodbasket_column: str = "woodbasket_acres",
+    category_column: str = "woodbasket",
+    top_private_per_woodbasket: int = 5,
+    include_weyerhaeuser: bool = True,
+    include_gov_tribal: bool = False,
+) -> tuple[list[dict[str, Any]], list[str], dict[str, str], list[str]]:
+    """Build grouped-bar payload for large landowners by woodbasket.
+
+    :param rows: Raw landowner rows with nested ``woodbasket_acres`` values.
+    :type rows: list[dict[str, Any]]
+    :param name_column: Owner name column.
+    :type name_column: str
+    :param type_column: Owner type column.
+    :type type_column: str
+    :param total_column: Owner total acres column.
+    :type total_column: str
+    :param woodbasket_column: Column containing per-woodbasket acre dict.
+    :type woodbasket_column: str
+    :param category_column: Output category column name.
+    :type category_column: str
+    :param top_private_per_woodbasket: Number of private owners to keep per woodbasket.
+    :type top_private_per_woodbasket: int
+    :param include_weyerhaeuser: Whether to include WY series.
+    :type include_weyerhaeuser: bool
+    :param include_gov_tribal: Whether to include Gov/Tribal series.
+    :type include_gov_tribal: bool
+    :returns: Tuple of row payload, series keys, labels mapping, and series colors.
+    :rtype: tuple[list[dict[str, Any]], list[str], dict[str, str], list[str]]
+    """
+    if not rows:
+        raise ValueError("rows must contain at least one item")
+
+    if top_private_per_woodbasket < 1:
+        raise ValueError("top_private_per_woodbasket must be at least 1")
+
+    missing_names = [i for i, row in enumerate(rows) if name_column not in row]
+    if missing_names:
+        raise ValueError(
+            f"name_column '{name_column}' missing in rows at index: {missing_names}"
+        )
+
+    missing_totals = [i for i, row in enumerate(rows) if total_column not in row]
+    if missing_totals:
+        raise ValueError(
+            f"total_column '{total_column}' missing in rows at index: {missing_totals}"
+        )
+
+    missing_woodbaskets = [i for i, row in enumerate(rows) if woodbasket_column not in row]
+    if missing_woodbaskets:
+        raise ValueError(
+            f"woodbasket_column '{woodbasket_column}' missing in rows at index: {missing_woodbaskets}"
+        )
+
+    owner_rows: dict[str, dict[str, Any]] = {str(row[name_column]): row for row in rows}
+    first_woodbasket_dict = rows[0][woodbasket_column]
+    if not isinstance(first_woodbasket_dict, dict):
+        raise ValueError(f"woodbasket_column '{woodbasket_column}' must contain dict values")
+
+    woodbasket_names = list(first_woodbasket_dict.keys())
+
+    selected_private_names: list[str] = []
+    for woodbasket_name in woodbasket_names:
+        private_candidates: list[tuple[str, float]] = []
+        for row in rows:
+            owner_name = str(row[name_column])
+            owner_type = str(row.get(type_column, "")).strip()
+            if owner_type in {"WY", "Gov/Tribal"}:
+                continue
+
+            wb_values = row.get(woodbasket_column, {})
+            if not isinstance(wb_values, dict):
+                continue
+            acres = float(wb_values.get(woodbasket_name, 0.0))
+            if acres > 0:
+                private_candidates.append((owner_name, acres))
+
+        private_candidates.sort(key=lambda item: item[1], reverse=True)
+        for owner_name, _ in private_candidates[:top_private_per_woodbasket]:
+            if owner_name not in selected_private_names:
+                selected_private_names.append(owner_name)
+
+    series_names: list[str] = []
+    if include_weyerhaeuser:
+        wy_name = next(
+            (str(row[name_column]) for row in rows if str(row.get(type_column, "")).strip() == "WY"),
+            None,
+        )
+        if wy_name:
+            series_names.append(wy_name)
+
+    if include_gov_tribal:
+        gov_name = next(
+            (
+                str(row[name_column])
+                for row in rows
+                if str(row.get(type_column, "")).strip() == "Gov/Tribal"
+            ),
+            None,
+        )
+        if gov_name:
+            series_names.append(gov_name)
+
+    series_names.extend(selected_private_names)
+
+    chart_rows: list[dict[str, Any]] = []
+    for woodbasket_name in woodbasket_names:
+        chart_row: dict[str, Any] = {category_column: woodbasket_name}
+        for owner_name in series_names:
+            owner_row = owner_rows[owner_name]
+            wb_values = owner_row.get(woodbasket_column, {})
+            chart_row[owner_name] = float(wb_values.get(woodbasket_name, 0.0))
+        chart_rows.append(chart_row)
+
+    series_labels = {name: name for name in series_names}
+
+    global_color_map = _build_large_landowner_global_color_map(
+        rows,
+        name_column=name_column,
+        type_column=type_column,
+        total_column=total_column,
+    )
+    series_colors = [global_color_map.get(name, NON_TOP10_COLOR) for name in series_names]
+
+    return chart_rows, series_names, series_labels, series_colors
+
+
+def generate_large_landowner_bar_chart_png(
+    rows: list[dict[str, Any]],
+    output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "large_landowners_bar_chart.png"),
+    *,
+    title: str = "Top Five Private Landowners per Woodbasket",
+    top_private_per_woodbasket: int = 5,
+    include_weyerhaeuser: bool = True,
+    include_gov_tribal: bool = False,
+) -> dict[str, Any]:
+    """Generate grouped large-landowner bar chart PNG with pie-consistent colors."""
+    chart_rows, series_columns, series_labels, series_colors = build_large_landowner_bar_data(
+        rows,
+        top_private_per_woodbasket=top_private_per_woodbasket,
+        include_weyerhaeuser=include_weyerhaeuser,
+        include_gov_tribal=include_gov_tribal,
+    )
+
+    return generate_bar_chart_png(
+        rows=chart_rows,
+        category_column="woodbasket",
+        series_columns=series_columns,
+        output_path=output_path,
+        title=title,
+        y_label="Thousands of Acres",
+        series_labels=series_labels,
+        stacked=False,
+        series_colors=series_colors,
+        y_divisor=1000,
+    )

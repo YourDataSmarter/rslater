@@ -1,0 +1,11 @@
+[
+    { "name": "Longview", "boundary": "Longview", "color": "#69a323" },
+    { "name": "Cathlamet", "boundary": "Cathlamet", "color": "#663700" },
+    { "name": "NW Oregon", "boundary": "NW Oregon", "color": "#aece10" },
+    { "name": "Mid Coast", "boundary": "Mid Coast", "color": "#728a3e" },
+    { "name": "Snow Peak", "boundary": "Snow Peak", "color": "#00bce4" },
+    { "name": "Clackamas", "boundary": "Clackamas", "color": "#4879ab" },
+    { "name": "Springfield", "boundary": "Springfield", "color": "#015779" },
+    { "name": "Coos Bay", "boundary": "Coos Bay", "color": "#ffcf01" },
+    { "name": "South Valley", "boundary": "South Valley", "color": "#eb931d" }
+]

@@ -1,0 +1,48 @@
+{
+    "title": "Sample Woodbasket Name",
+    "sections": [
+        {
+            "label": "WY Ownership",
+            "rows": [
+                { "attribute": "Total Acres",         "existing": 1030646, "potential": null, "total": 1030646, "percent": "100%", "highlight": true },
+                { "attribute": "Fee",                 "existing": 1025234, "potential": null, "total": 1025234, "percent": "99%"  },
+                { "attribute": "Lease",               "existing": 4847,    "potential": null, "total": 4847,    "percent": "0%"   },
+                { "attribute": "Timber Reservation",  "existing": 564,     "potential": null, "total": 564,     "percent": "0%"   }
+            ]
+        },
+        {
+            "label": "Existing & Potential Agreements",
+            "rows": [
+                { "attribute": "Recreational Leasing",   "existing": 1024058, "potential": null,  "total": 1024058, "percent": "99%" },
+                { "attribute": "Communications",         "existing": 3,       "potential": null,  "total": 3,       "percent": "0%"  },
+                { "attribute": "Surface",                "existing": 68,      "potential": 20000, "total": 20068,   "percent": "2%"  },
+                { "attribute": "Forest Carbon",          "existing": null,    "potential": 20000, "total": 20000,   "percent": "2%"  },
+                { "attribute": "Wind",                   "existing": null,    "potential": null,  "total": null,    "percent": "0%"  },
+                { "attribute": "Carbon Capture",         "existing": 49460,   "potential": 49460, "total": 98920,   "percent": "10%" },
+                { "attribute": "Oil & Gas",              "existing": 21027,   "potential": 236,   "total": 21263,   "percent": "2%"  },
+                { "attribute": "Solar",                  "existing": 4487,    "potential": 23846, "total": 28333,   "percent": "3%"  },
+                { "attribute": "Hard Minerals",          "existing": 5221,    "potential": 5300,  "total": 10521,   "percent": "1%"  },
+                { "attribute": "Mitigation Banking",     "existing": null,    "potential": null,  "total": null,    "percent": "0%"  },
+                { "attribute": "Exploration Agreement",  "existing": 3289,    "potential": null,  "total": 3289,    "percent": "0%"  },
+                { "attribute": "Geophysical Agreement",  "existing": 8687,    "potential": null,  "total": 8687,    "percent": "1%"  },
+                { "attribute": "CON",                    "existing": null,    "potential": 438,   "total": 438,     "percent": "0%"  },
+                { "attribute": "SNS",                    "existing": null,    "potential": 3398,  "total": 3398,    "percent": "0%"  },
+                { "attribute": "HBU",                    "existing": null,    "potential": 64426, "total": 64426,   "percent": "6%"  },
+                { "attribute": "DEV",                    "existing": null,    "potential": 599,   "total": 599,     "percent": "0%"  },
+                { "attribute": "704B",                   "existing": null,    "potential": 375,   "total": 375,     "percent": "0%"  }
+            ]
+        },
+        {
+            "label": "TPOP",
+            "rows": [
+                { "attribute": "Net Productive Acres", "existing": 500000, "potential": null, "total": 500000, "percent": "100%" }
+            ]
+        },
+        {
+            "label": "Productive Pine Acres",
+            "rows": [
+                { "attribute": "Productive Pine Acres", "existing": 300000, "potential": null, "total": 300000, "percent": "100%" }
+            ]
+        }
+    ]
+}

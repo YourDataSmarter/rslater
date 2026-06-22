@@ -161,6 +161,208 @@ def build_grand_total_row(
     return [summary_row], totals
 
 
+def build_percent_acres_rows(
+    rows: list[dict[str, Any]],
+    *,
+    region_column: str = "region",
+    total_column: str = "total",
+    counts_column: str = "counts",
+    count_keys: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Flatten percent-acres rows that store counts as a list into per-column dicts.
+
+    :param rows: Source rows with a ``counts`` list field.
+    :type rows: list[dict[str, Any]]
+    :param region_column: Column containing the region label.
+    :type region_column: str
+    :param total_column: Column containing the total acreage.
+    :type total_column: str
+    :param counts_column: Column whose value is a list of percentage strings.
+    :type counts_column: str
+    :param count_keys: Output column keys for each count element. Defaults to
+        ``["count_1", "count_2", "count_3", "count_4", "count_5plus"]``.
+    :type count_keys: list[str] | None
+    :returns: Flattened rows suitable for ``generate_table_png``.
+    :rtype: list[dict[str, Any]]
+    """
+    if count_keys is None:
+        count_keys = ["count_1", "count_2", "count_3", "count_4", "count_5plus"]
+
+    result: list[dict[str, Any]] = []
+    for row in rows:
+        flat: dict[str, Any] = {
+            region_column: row[region_column],
+            total_column: row[total_column],
+        }
+        counts = row.get(counts_column) or []
+        for i, key in enumerate(count_keys):
+            flat[key] = counts[i] if i < len(counts) else ""
+        result.append(flat)
+    return result
+
+
+def build_large_landowner_table_rows(
+    rows: list[dict[str, Any]],
+    *,
+    name_column: str = "name",
+    total_column: str = "total_acres",
+    woodbasket_column: str = "woodbasket_acres",
+    mills_column: str = "mills",
+    top_n: int = 10,
+    woodbasket_name: str | None = None,
+    include_mill_rows: bool = True,
+) -> list[dict[str, Any]]:
+    """Build flattened rows for the large-landowner table view.
+
+    :param rows: Raw large landowner rows.
+    :type rows: list[dict[str, Any]]
+    :param name_column: Column containing owner display names.
+    :type name_column: str
+    :param total_column: Column containing owner total acres values.
+    :type total_column: str
+    :param woodbasket_column: Column containing per-woodbasket acre dict values.
+    :type woodbasket_column: str
+    :param mills_column: Column containing associated mill list values.
+    :type mills_column: str
+    :param top_n: Number of largest owners to include in the table.
+    :type top_n: int
+    :param woodbasket_name: Optional woodbasket key used for acres-within value.
+    :type woodbasket_name: str | None
+    :param include_mill_rows: Whether to append mill-detail rows under each owner.
+    :type include_mill_rows: bool
+    :returns: Flattened owner + mill table rows.
+    :rtype: list[dict[str, Any]]
+    """
+    if not rows:
+        raise ValueError("rows must contain at least one item")
+
+    if top_n < 1:
+        raise ValueError("top_n must be at least 1")
+
+    missing_name = [i for i, row in enumerate(rows) if name_column not in row]
+    if missing_name:
+        raise ValueError(
+            f"name_column '{name_column}' missing in rows at index: {missing_name}"
+        )
+
+    missing_total = [i for i, row in enumerate(rows) if total_column not in row]
+    if missing_total:
+        raise ValueError(
+            f"total_column '{total_column}' missing in rows at index: {missing_total}"
+        )
+
+    sorted_rows = sorted(rows, key=lambda row: float(row[total_column]), reverse=True)
+    top_rows = sorted_rows[:top_n]
+
+    table_rows: list[dict[str, Any]] = []
+    for rank_index, owner in enumerate(top_rows, start=1):
+        total_acres = float(owner[total_column])
+        acres_within = total_acres
+
+        if woodbasket_name:
+            wb_values = owner.get(woodbasket_column, {})
+            if not isinstance(wb_values, dict):
+                raise ValueError(
+                    f"woodbasket_column '{woodbasket_column}' must contain dict values"
+                )
+            acres_within = float(wb_values.get(woodbasket_name, 0.0))
+
+        owner_row = {
+            "rank": rank_index,
+            "landowner_name": str(owner[name_column]),
+            "total_acres_owned": total_acres,
+            "acres_within_woodbasket": acres_within,
+            "mill_name": "",
+            "city": "",
+            "state": "",
+            "county": "",
+            "ils_id": "",
+            "forisk_id": "",
+            "lims_destination_id": "",
+        }
+        table_rows.append(owner_row)
+
+        if include_mill_rows:
+            mills = owner.get(mills_column) or []
+            for mill in mills:
+                table_rows.append(
+                    {
+                        "rank": None,
+                        "landowner_name": "",
+                        "total_acres_owned": None,
+                        "acres_within_woodbasket": None,
+                        "mill_name": str(mill.get("mill_name", "")),
+                        "city": str(mill.get("city", "")),
+                        "state": str(mill.get("state", "")),
+                        "county": str(mill.get("county", "")),
+                        "ils_id": str(mill.get("ils_id", "")),
+                        "forisk_id": str(mill.get("forisk_id", "")),
+                        "lims_destination_id": str(mill.get("lims_destination_id", "")),
+                    }
+                )
+
+    return table_rows
+
+
+def generate_large_landowner_table_png(
+    rows: list[dict[str, Any]],
+    output_path: str = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "large_landowners_table.png"),
+    *,
+    title: str = "Landowner Level Data",
+    top_n: int = 10,
+    woodbasket_name: str | None = None,
+) -> dict[str, Any]:
+    """Generate a large-landowner table PNG with optional mill detail rows.
+
+    :param rows: Raw large landowner rows.
+    :type rows: list[dict[str, Any]]
+    :param output_path: Destination path for the PNG file.
+    :type output_path: str
+    :param title: Table title.
+    :type title: str
+    :param top_n: Number of largest owners to include.
+    :type top_n: int
+    :param woodbasket_name: Optional woodbasket key for acres-within column.
+    :type woodbasket_name: str | None
+    :returns: Metadata about the generated table image.
+    :rtype: dict[str, Any]
+    """
+    table_rows = build_large_landowner_table_rows(
+        rows,
+        top_n=top_n,
+        woodbasket_name=woodbasket_name,
+        include_mill_rows=True,
+    )
+
+    columns = [
+        {"key": "rank", "label": "Rank"},
+        {"key": "landowner_name", "label": "Landowner Name"},
+        {"key": "total_acres_owned", "label": "Total Acres Owned"},
+        {"key": "acres_within_woodbasket", "label": "Acres Within Woodbasket"},
+        {"key": "mill_name", "label": "Mill Name"},
+        {"key": "city", "label": "City"},
+        {"key": "state", "label": "State"},
+        {"key": "county", "label": "County"},
+        {"key": "ils_id", "label": "ILS_ID"},
+        {"key": "forisk_id", "label": "Forisk_ID"},
+        {"key": "lims_destination_id", "label": "LIMS_Destination_ID"},
+    ]
+    numeric_columns = ["rank", "total_acres_owned", "acres_within_woodbasket"]
+    column_widths = [0.05, 0.17, 0.11, 0.12, 0.12, 0.075, 0.05, 0.08, 0.07, 0.07, 0.135]
+
+    return generate_table_png(
+        rows=table_rows,
+        output_path=output_path,
+        columns=columns,
+        numeric_columns=numeric_columns,
+        summary_rows=None,
+        highlight_summary_rows=False,
+        column_widths=column_widths,
+        figure_width=15.5,
+        title=title,
+    )
+
+
 def generate_table_png(
     rows: list[dict[str, Any]],
     output_path: str = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "table.png"),
@@ -171,6 +373,7 @@ def generate_table_png(
     summary_rows: list[dict[str, Any]] | None = None,
     highlight_summary_rows: bool = True,
     column_widths: list[float] | None = None,
+    figure_width: float = 12.0,
     title: str | None = None,
 ) -> dict[str, Any]:
     """Generate a PNG export for generic table data.
@@ -191,6 +394,8 @@ def generate_table_png(
     :type highlight_summary_rows: bool
     :param column_widths: Optional normalized width list for rendered columns.
     :type column_widths: list[float] | None
+    :param figure_width: Figure width in inches used for table rendering.
+    :type figure_width: float
     :param title: Optional chart title.
     :type title: str | None
     :returns: Metadata about the generated table image.
@@ -249,7 +454,7 @@ def generate_table_png(
 
     row_count = len(rendered_rows)
     figure_height = max(4.0, 1.6 + row_count * 0.42)
-    figure, axis = plt.subplots(figsize=(12, figure_height), dpi=150)
+    figure, axis = plt.subplots(figsize=(figure_width, figure_height), dpi=150)
     try:
         axis.axis("off")
 
@@ -305,6 +510,132 @@ def generate_table_png(
             "row_count": row_count,
             "data_row_count": len(rows),
             "summary_row_count": len(summary_rows),
+            "width_px": width_px,
+            "height_px": height_px,
+            "title": title,
+        }
+    finally:
+        plt.close(figure)
+
+
+def generate_portfolio_attributes_table_png(
+    data: dict[str, Any],
+    output_path: str = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "portfolio_attributes.png"),
+) -> dict[str, Any]:
+    """Generate a PNG export for a sectioned portfolio attributes table.
+
+    :param data: Portfolio data with ``title`` and ``sections`` list.
+    :type data: dict[str, Any]
+    :param output_path: Destination path for the PNG file.
+    :type output_path: str
+    :returns: Metadata about the generated table image.
+    :rtype: dict[str, Any]
+    :raises ValueError: If ``sections`` is empty.
+    :raises ImportError: If matplotlib is not installed.
+    """
+    title = str(data.get("title", ""))
+    sections = data.get("sections", [])
+
+    if not sections:
+        raise ValueError("data must contain at least one section")
+
+    column_labels = [
+        "Attribute",
+        "Existing Characteristics/Agreements",
+        "Identified Potential Opportunities",
+        "Total",
+        "% of Total",
+    ]
+    column_widths = [0.22, 0.28, 0.24, 0.14, 0.09]
+
+    def _fmt(value: Any) -> str:
+        if value is None:
+            return "-"
+        try:
+            n = float(value)
+            return f"{n:,.0f}" if n.is_integer() else f"{n:,.2f}"
+        except (TypeError, ValueError):
+            return str(value)
+
+    rendered_rows: list[list[str]] = []
+    section_header_indices: set[int] = set()
+
+    for section in sections:
+        section_header_indices.add(len(rendered_rows))
+        rendered_rows.append([str(section.get("label", "")), "", "", "", ""])
+        for row in section.get("rows", []):
+            rendered_rows.append([
+                str(row.get("attribute", "")),
+                _fmt(row.get("existing")),
+                _fmt(row.get("potential")),
+                _fmt(row.get("total")),
+                str(row.get("percent", "")),
+            ])
+
+    output = Path(output_path).expanduser().resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    plt = _get_pyplot_module()
+
+    row_count = len(rendered_rows)
+    figure_height = max(6.0, 1.8 + row_count * 0.32)
+    figure, axis = plt.subplots(figsize=(14, figure_height), dpi=150)
+    try:
+        axis.axis("off")
+
+        if title:
+            axis.set_title(title, loc="left", pad=10, fontweight="bold", fontsize=11)
+
+        table = axis.table(
+            cellText=rendered_rows,
+            colLabels=column_labels,
+            colWidths=column_widths,
+            cellLoc="right",
+            colLoc="right",
+            loc="center",
+        )
+        table.auto_set_font_size(False)
+        table.set_fontsize(9)
+        table.scale(1, 1.2)
+
+        for (row_index, col_index), cell in table.get_celld().items():
+            cell.set_edgecolor("#d0d0d0")
+            cell.set_linewidth(0.5)
+
+            if row_index == 0:
+                cell.set_facecolor("#f3f6f7")
+                if col_index == 0:
+                    cell.set_text_props(weight="bold", ha="left")
+                else:
+                    cell.set_text_props(weight="bold", ha="right")
+                continue
+
+            data_row_index = row_index - 1
+
+            if data_row_index in section_header_indices:
+                cell.set_facecolor("#e8e8e8")
+                cell.set_linewidth(0)
+                if col_index == 0:
+                    cell.set_text_props(weight="bold", ha="left")
+                else:
+                    cell.set_text_props(ha="left")
+            else:
+                cell.set_facecolor("white")
+                if col_index == 0:
+                    cell.set_text_props(ha="left")
+                else:
+                    cell.set_text_props(ha="right")
+
+        figure.tight_layout()
+        figure.savefig(output, format="png", bbox_inches="tight")
+
+        width_px = int(figure.get_size_inches()[0] * figure.dpi)
+        height_px = int(figure.get_size_inches()[1] * figure.dpi)
+
+        return {
+            "output_path": str(output),
+            "row_count": row_count,
+            "section_count": len(sections),
             "width_px": width_px,
             "height_px": height_px,
             "title": title,
