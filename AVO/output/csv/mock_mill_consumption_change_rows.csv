@@ -1,0 +1,10 @@
+name,prev,curr,future,type,product
+Longview Sawmill,170,181,185,increase,Douglas Fir
+Santiam Saw Mill,190,196,200,increase,Douglas Fir
+Stimson Clatskanie,45,40,38,decrease,Douglas Fir
+Swanson Bros. Noti,25,20,0,closure,Douglas Fir
+Hampton Banks,45,40,0,closure,Whitewood
+CAD Lumber Riddle,30,25,10,at-risk,Whitewood
+Interfor Philomath,120,101,0,closure,Whitewood
+New Mill 3,,,190,new,Douglas Fir
+New Mill 4,,,120,new,Whitewood

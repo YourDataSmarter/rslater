@@ -21,7 +21,9 @@ def ensure_output_directory(output_path: str) -> Path:
     :rtype: Path
     :raises ValueError: If output path is invalid.
     """
-    pass
+    output = normalize_output_path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    return output.parent
 
 
 def normalize_output_path(output_path: str, *, suffix: str | None = None) -> Path:
@@ -35,4 +37,17 @@ def normalize_output_path(output_path: str, *, suffix: str | None = None) -> Pat
     :rtype: Path
     :raises ValueError: If output path is invalid.
     """
-    pass
+    candidate = (output_path or "").strip()
+    if not candidate:
+        raise ValueError("output_path must be a non-empty string")
+
+    output = Path(candidate).expanduser().resolve()
+    if output.exists() and output.is_dir():
+        raise ValueError("output_path must point to a file, not a directory")
+
+    if suffix:
+        normalized_suffix = suffix if suffix.startswith(".") else f".{suffix}"
+        if output.suffix.lower() != normalized_suffix.lower():
+            output = output.with_suffix(normalized_suffix)
+
+    return output

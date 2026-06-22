@@ -1,0 +1,14 @@
+business,region,area,ownership_type,total_stand_acres,net_productive_acres,harvestable_acres
+STL,AO,Coos Bay,Fee,553611,512487,487116
+STL,AO,Klamath,Lease,46469,42000,21500
+STL,CPT,Florida,Timber Res,7742,7000,6000
+STL,MIA,Columbus,Fee,10000,9500,9000
+STL,MIA,Columbus,Lease,8000,7500,7000
+STL,AO,Astoria,Fee,25000,24000,20000
+STL,AO,Tillamook,Lease,18000,17000,15000
+STL,CPT,Orlando,Fee,12000,11000,10000
+STL,CPT,Miami,Timber Res,9000,8500,8000
+STL,MIA,Jacksonville,Lease,7000,6500,6000
+STL,MIA,Tampa,Fee,6000,5800,5700
+STL,AO,Eugene,Lease,5000,4800,4700
+STL,AO,Salem,Fee,4000,3900,3800

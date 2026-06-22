@@ -86,11 +86,11 @@ Recommended behavior for utility functions:
 - Location status: temporary
 - API status: expected to evolve while requirements are refined
 - Module scaffold status: created (`src/avo_utils` and `tests`)
-- Function status: `generate_pie_chart_png`, `generate_bar_chart_png`, and `generate_table_png` are implemented; table logic supports optional summary rows and edge-case helper totals in `src/avo_utils/tables.py`
+- Function status: `generate_pie_chart_png`, `generate_bar_chart_png`, `generate_table_png`, and `export_csv` are implemented; table logic supports optional summary rows and edge-case helper totals in `src/avo_utils/tables.py`
 - Test data status: chart mock rows moved to external JSON under `tests/mock_data/`
 - Pie and table chart tests: implemented and passing against file-based mock data
 - Local output folders: created under `output/` for webmaps, charts, and csv
-- Default output paths: wired through shared constants in `src/avo_utils/io.py`
+- Default output paths: wired through shared constants in `src/avo_utils/io.py`; path normalization and output-directory helpers are implemented
 
 ## README Maintenance
 
