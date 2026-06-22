@@ -1,4 +1,4 @@
-"""Tabular data export utilities for AVO."""
+"""CSV export utilities for AVO."""
 
 import csv
 import json
@@ -95,7 +95,6 @@ def export_csv(
     ensure_output_directory(str(resolved_output))
 
     if fieldnames is None:
-        # Preserve first-seen key order across all rows for stable exports.
         seen: set[str] = set()
         inferred_fieldnames: list[str] = []
         for row in rows:

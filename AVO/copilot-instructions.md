@@ -69,8 +69,10 @@ For map/chart/CSV utilities:
 
 If creating or updating modules, prefer this split:
 - `maps.py`: web map to PNG helpers
-- `charts.py`: chart image generation helpers
-- `exports.py`: CSV export helpers
+- `pies.py`: pie chart image generation helpers
+- `bars.py`: bar chart image generation helpers
+- `tables.py`: table image generation helpers
+- `csv.py`: CSV export helpers
 - `io.py`: shared file/path/output utilities
 
 ## Testing Expectations

@@ -118,7 +118,7 @@ def load_mock_portfolio_attributes() -> dict[str, object]:
 
 def test_generate_pie_chart_png_aggregates_labels(tmp_path) -> None:
     """Rows with the same label should be summed into one slice."""
-    from avo_utils.charts import generate_pie_chart_png
+    from avo_utils.pies import generate_pie_chart_png
 
     output = str(tmp_path / "test_pie.png")
     rows = load_mock_cover_type_rows()
@@ -141,7 +141,7 @@ def test_generate_pie_chart_png_aggregates_labels(tmp_path) -> None:
 
 def test_generate_pie_chart_png_creates_file(tmp_path) -> None:
     """Output PNG file should exist after a successful call."""
-    from avo_utils.charts import generate_pie_chart_png
+    from avo_utils.pies import generate_pie_chart_png
 
     output = str(tmp_path / "test_pie.png")
     rows = load_mock_cover_type_rows()
@@ -158,7 +158,7 @@ def test_generate_pie_chart_png_creates_file(tmp_path) -> None:
 
 def test_generate_pie_chart_png_empty_rows_raises() -> None:
     """Empty rows should raise ValueError."""
-    from avo_utils.charts import generate_pie_chart_png
+    from avo_utils.pies import generate_pie_chart_png
 
     with pytest.raises(ValueError, match="rows"):
         generate_pie_chart_png([], "broad_cover_type", "harvestable_acres")
@@ -166,7 +166,7 @@ def test_generate_pie_chart_png_empty_rows_raises() -> None:
 
 def test_generate_pie_chart_png_missing_column_raises() -> None:
     """Missing column name should raise ValueError."""
-    from avo_utils.charts import generate_pie_chart_png
+    from avo_utils.pies import generate_pie_chart_png
 
     rows = load_mock_cover_type_rows()
     with pytest.raises(ValueError, match="label_column"):
@@ -261,14 +261,9 @@ def test_generate_table_png_includes_summary_totals(tmp_path) -> None:
     )
 
 
-def test_generate_chart_png_placeholder() -> None:
-    """Placeholder test for generic chart PNG export."""
-    pass
-
-
 def test_generate_ownership_type_pie_chart_png_aggregates_labels(tmp_path) -> None:
     """Ownership type pie slices should be aggregated by ownership_type."""
-    from avo_utils.charts import generate_pie_chart_png
+    from avo_utils.pies import generate_pie_chart_png
 
     output = str(tmp_path / "ownership_pie.png")
     rows = load_mock_ownership_type_rows()

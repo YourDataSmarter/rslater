@@ -39,7 +39,7 @@ def _load_mock_json(file_name: str) -> object:
 
 def test_export_csv_writes_file_with_inferred_columns(tmp_path) -> None:
     """CSV export should infer columns from rows and write a .csv file."""
-    from avo_utils.exports import export_csv
+    from avo_utils.csv import export_csv
 
     output = str(tmp_path / "cover_type_export")
     rows = [
@@ -66,7 +66,7 @@ def test_export_csv_writes_file_with_inferred_columns(tmp_path) -> None:
 
 def test_export_csv_uses_explicit_field_order(tmp_path) -> None:
     """Explicit fieldnames should control column order in output CSV."""
-    from avo_utils.exports import export_csv
+    from avo_utils.csv import export_csv
 
     output = str(tmp_path / "ordered.csv")
     rows = [
@@ -89,7 +89,7 @@ def test_export_csv_uses_explicit_field_order(tmp_path) -> None:
 
 def test_export_csv_rejects_row_columns_not_in_fieldnames(tmp_path) -> None:
     """Rows with columns missing from explicit fieldnames should raise."""
-    from avo_utils.exports import export_csv
+    from avo_utils.csv import export_csv
 
     output = str(tmp_path / "invalid.csv")
     rows = [{"region": "AO", "total": 100, "count_1": "10%"}]
@@ -100,7 +100,7 @@ def test_export_csv_rejects_row_columns_not_in_fieldnames(tmp_path) -> None:
 
 def test_export_csv_for_percent_acres_table_rows(tmp_path) -> None:
     """Flattened percent acres rows should export to CSV for table pipelines."""
-    from avo_utils.exports import export_csv
+    from avo_utils.csv import export_csv
     from avo_utils.tables import build_percent_acres_rows
 
     raw_rows = load_mock_percent_acres_rows()
@@ -126,7 +126,7 @@ def test_export_csv_for_percent_acres_table_rows(tmp_path) -> None:
 @pytest.mark.parametrize("mock_file", LIST_BASED_MOCK_FILES)
 def test_export_csv_for_all_list_based_mock_files(tmp_path, mock_file: str) -> None:
     """Every list-based mock fixture should export to CSV successfully."""
-    from avo_utils.exports import export_csv
+    from avo_utils.csv import export_csv
 
     raw = _load_mock_json(mock_file)
     assert isinstance(raw, list)
@@ -144,7 +144,7 @@ def test_export_csv_for_all_list_based_mock_files(tmp_path, mock_file: str) -> N
 
 def test_export_csv_for_portfolio_attributes_mock_data(tmp_path) -> None:
     """Portfolio attributes fixture should export from sectioned input directly."""
-    from avo_utils.exports import export_csv
+    from avo_utils.csv import export_csv
 
     raw = _load_mock_json("portfolio_attributes.json")
     assert isinstance(raw, dict)
@@ -161,7 +161,7 @@ def test_export_csv_for_portfolio_attributes_mock_data(tmp_path) -> None:
 
 def test_export_csv_supports_plain_dict_input(tmp_path) -> None:
     """Plain dict payloads should be exported as one-row CSV files."""
-    from avo_utils.exports import export_csv
+    from avo_utils.csv import export_csv
 
     payload = {"name": "sample", "count": 3}
     output = str(tmp_path / "single_dict.csv")
@@ -174,7 +174,7 @@ def test_export_csv_supports_plain_dict_input(tmp_path) -> None:
 
 def test_export_csv_supports_scalar_list_input(tmp_path) -> None:
     """List payloads with scalar items should export via a value column."""
-    from avo_utils.exports import export_csv
+    from avo_utils.csv import export_csv
 
     payload = ["AO", "SO", "NW"]
     output = str(tmp_path / "scalar_list.csv")
@@ -186,7 +186,7 @@ def test_export_csv_supports_scalar_list_input(tmp_path) -> None:
 
 def test_export_csv_all_mocks_to_output_csv_folder() -> None:
     """All mock fixtures should export to output/csv for manual inspection."""
-    from avo_utils.exports import export_csv
+    from avo_utils.csv import export_csv
     from avo_utils.io import DEFAULT_CSV_OUTPUT_DIR
 
     outputs: list[Path] = []

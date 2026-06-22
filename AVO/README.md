@@ -46,12 +46,16 @@ AVO/
 	src/
 		avo_utils/
 			__init__.py
+			configs/
+				color_config.py
+				pies_config.py
+				bars_config.py
+				tables_config.py
 			maps.py        # web map to PNG helpers
-			charts.py      # compatibility wrapper + generic chart dispatcher
 			pies.py        # pie chart PNG helpers
 			bars.py        # bar chart PNG helpers
 			tables.py      # table PNG helpers
-			exports.py     # CSV export helpers
+			csv.py         # CSV export helpers
 			io.py          # shared file/path/output helpers
 	tests/
 		mock_data/
@@ -68,7 +72,6 @@ AVO/
 - `generate_table_png(...)`
 - `build_cover_type_summary_rows(...)` (optional edge-case helper for this specific table)
 - `generate_bar_chart_png(...)`
-- `generate_chart_png(...)` (generic chart dispatcher)
 - `export_csv(...)`
 
 ## Input/Output Expectations

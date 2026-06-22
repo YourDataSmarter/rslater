@@ -5,7 +5,27 @@ from pathlib import Path
 from typing import Any
 
 from .configs import (
+    BAR_DPI,
+    BAR_FIGURE_SIZE,
+    BAR_GRID_ALPHA,
+    BAR_GRID_LINESTYLE,
+    BAR_GROUP_WIDTH,
+    BAR_GROUP_WIDTH_SCALE,
+    BAR_STACKED_WIDTH,
+    BAR_VALUE_LABEL_COLOR,
+    BAR_VALUE_LABEL_FONT_SIZE,
+    DELIVERY_BY_AREA_BAR_SERIES_COLORS,
+    DELIVERY_BY_AREA_BAR_SERIES_LABELS,
+    DELIVERY_BY_AREA_BAR_TITLE,
+    DELIVERY_BY_AREA_BAR_Y_LABEL,
     GOV_TRIBAL_COLOR,
+    LARGE_LANDOWNER_BAR_TITLE,
+    LARGE_LANDOWNER_BAR_Y_DIVISOR,
+    LARGE_LANDOWNER_BAR_Y_LABEL,
+    MILL_CONSUMPTION_BAR_SERIES_COLORS,
+    MILL_CONSUMPTION_BAR_SERIES_LABELS,
+    MILL_CONSUMPTION_BAR_TITLE,
+    MILL_CONSUMPTION_BAR_Y_LABEL,
     NON_TOP10_COLOR,
     PRIVATE_PALETTE,
     WEYERHAEUSER_COLOR,
@@ -121,7 +141,7 @@ def generate_bar_chart_png(
 
     plt = _get_pyplot_module()
 
-    figure, axis = plt.subplots(figsize=(11, 6), dpi=150)
+    figure, axis = plt.subplots(figsize=BAR_FIGURE_SIZE, dpi=BAR_DPI)
     try:
         x_positions = list(range(len(categories)))
 
@@ -140,7 +160,7 @@ def generate_bar_chart_png(
                     else None
                 )
                 bar_kwargs: dict[str, Any] = {
-                    "width": 0.6,
+                    "width": BAR_STACKED_WIDTH,
                     "label": display_name,
                     "bottom": bottoms,
                 }
@@ -158,12 +178,12 @@ def generate_bar_chart_png(
                             label_text,
                             ha="center",
                             va="center",
-                            fontsize=8,
-                            color="#4a4a4a",
+                            fontsize=BAR_VALUE_LABEL_FONT_SIZE,
+                            color=BAR_VALUE_LABEL_COLOR,
                         )
                 bottoms = [b + v for b, v in zip(bottoms, display_values)]
         else:
-            bar_group_width = 0.8
+            bar_group_width = BAR_GROUP_WIDTH
             per_bar_width = bar_group_width / len(series_columns)
             for index, series_key in enumerate(series_columns):
                 offset = (index - (len(series_columns) - 1) / 2) * per_bar_width
@@ -179,7 +199,10 @@ def generate_bar_chart_png(
                     if series_colors and index < len(series_colors)
                     else None
                 )
-                bar_kwargs = {"width": per_bar_width * 0.95, "label": display_name}
+                bar_kwargs = {
+                    "width": per_bar_width * BAR_GROUP_WIDTH_SCALE,
+                    "label": display_name,
+                }
                 if color:
                     bar_kwargs["color"] = color
                 bars = axis.bar(bar_positions, display_values, **bar_kwargs)
@@ -194,14 +217,14 @@ def generate_bar_chart_png(
                             label_text,
                             ha="center",
                             va="bottom",
-                            fontsize=8,
-                            color="#4a4a4a",
+                            fontsize=BAR_VALUE_LABEL_FONT_SIZE,
+                            color=BAR_VALUE_LABEL_COLOR,
                         )
 
         axis.set_xticks(x_positions)
         axis.set_xticklabels(categories, rotation=0, ha="center")
         axis.legend(loc="upper right")
-        axis.grid(axis="y", linestyle="--", alpha=0.35)
+        axis.grid(axis="y", linestyle=BAR_GRID_LINESTYLE, alpha=BAR_GRID_ALPHA)
 
         if title:
             axis.set_title(title)
@@ -396,7 +419,7 @@ def generate_large_landowner_bar_chart_png(
     rows: list[dict[str, Any]],
     output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "large_landowners_bar_chart.png"),
     *,
-    title: str = "Top Five Private Landowners per Woodbasket",
+    title: str = LARGE_LANDOWNER_BAR_TITLE,
     top_private_per_woodbasket: int = 5,
     include_weyerhaeuser: bool = True,
     include_gov_tribal: bool = False,
@@ -415,11 +438,11 @@ def generate_large_landowner_bar_chart_png(
         series_columns=series_columns,
         output_path=output_path,
         title=title,
-        y_label="Thousands of Acres",
+        y_label=LARGE_LANDOWNER_BAR_Y_LABEL,
         series_labels=series_labels,
         stacked=False,
         series_colors=series_colors,
-        y_divisor=1000,
+        y_divisor=LARGE_LANDOWNER_BAR_Y_DIVISOR,
     )
 
 
@@ -479,11 +502,11 @@ def build_mill_consumption_change_bar_data(
 
     series_columns = [prev_column, curr_column, future_column]
     series_labels = {
-        prev_column: "2023",
-        curr_column: "2024",
-        future_column: "2028/2029 ESH/WHITE",
+        prev_column: MILL_CONSUMPTION_BAR_SERIES_LABELS["prev"],
+        curr_column: MILL_CONSUMPTION_BAR_SERIES_LABELS["curr"],
+        future_column: MILL_CONSUMPTION_BAR_SERIES_LABELS["future"],
     }
-    series_colors = ["#b0c4de", "#6495ed", "#4682b4"]
+    series_colors = MILL_CONSUMPTION_BAR_SERIES_COLORS.copy()
     return chart_rows, series_columns, series_labels, series_colors
 
 
@@ -491,7 +514,7 @@ def generate_mill_consumption_change_bar_chart_png(
     rows: list[dict[str, Any]],
     output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "mill_consumption_changes_bar_chart.png"),
     *,
-    title: str = "Expected Log Consumption Changes 2023 - 2028/2029 (MMBF)",
+    title: str = MILL_CONSUMPTION_BAR_TITLE,
     product_name: str | None = None,
 ) -> dict[str, Any]:
     """Generate grouped bar chart PNG for mill consumption change rows."""
@@ -509,7 +532,7 @@ def generate_mill_consumption_change_bar_chart_png(
         series_columns=series_columns,
         output_path=output_path,
         title=title,
-        y_label="MMBF",
+        y_label=MILL_CONSUMPTION_BAR_Y_LABEL,
         series_labels=series_labels,
         stacked=False,
         series_colors=series_colors,
@@ -566,11 +589,11 @@ def build_delivery_by_area_bar_data(
 
     series_columns = [export_column, domestic_internal_column, domestic_third_party_column]
     series_labels = {
-        export_column: "Export",
-        domestic_internal_column: "Domestic Internal",
-        domestic_third_party_column: "Domestic 3rd Party",
+        export_column: DELIVERY_BY_AREA_BAR_SERIES_LABELS["export"],
+        domestic_internal_column: DELIVERY_BY_AREA_BAR_SERIES_LABELS["domestic_internal"],
+        domestic_third_party_column: DELIVERY_BY_AREA_BAR_SERIES_LABELS["domestic_third_party"],
     }
-    series_colors = ["#58a8db", "#b8d871", "#efd35e"]
+    series_colors = DELIVERY_BY_AREA_BAR_SERIES_COLORS.copy()
     return chart_rows, series_columns, series_labels, series_colors
 
 
@@ -578,7 +601,7 @@ def generate_delivery_by_area_bar_chart_png(
     rows: list[dict[str, Any]],
     output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "delivery_by_area_bar_chart.png"),
     *,
-    title: str = "2023 Combined DF/WW Deliveries by Area",
+    title: str = DELIVERY_BY_AREA_BAR_TITLE,
 ) -> dict[str, Any]:
     """Generate stacked delivery-by-area bar chart PNG."""
     chart_rows, series_columns, series_labels, series_colors = build_delivery_by_area_bar_data(rows)
@@ -589,7 +612,7 @@ def generate_delivery_by_area_bar_chart_png(
         series_columns=series_columns,
         output_path=output_path,
         title=title,
-        y_label="MMBF",
+        y_label=DELIVERY_BY_AREA_BAR_Y_LABEL,
         series_labels=series_labels,
         stacked=True,
         series_colors=series_colors,

@@ -4,6 +4,32 @@ import importlib
 from pathlib import Path
 from typing import Any
 
+from .configs import (
+    DEFAULT_TABLE_DPI,
+    DEFAULT_TABLE_EDGE_COLOR,
+    DEFAULT_TABLE_FONT_SIZE,
+    DEFAULT_TABLE_HEADER_BACKGROUND,
+    DEFAULT_TABLE_LINE_WIDTH,
+    DEFAULT_TABLE_SCALE_Y,
+    DEFAULT_TABLE_SUMMARY_BACKGROUND,
+    DEFAULT_TABLE_SUMMARY_TEXT_COLOR,
+    DELIVERY_BY_AREA_TABLE_FIGURE_WIDTH,
+    DELIVERY_BY_AREA_TABLE_FIRST_COLUMN_WIDTH,
+    DELIVERY_BY_AREA_TABLE_REMAINING_WIDTH,
+    DELIVERY_BY_AREA_TABLE_ROW_BACKGROUND_COLORS,
+    DELIVERY_BY_AREA_TABLE_ROW_TEXT_COLORS,
+    LARGE_LANDOWNER_TABLE_COLUMNS,
+    LARGE_LANDOWNER_TABLE_COLUMN_WIDTHS,
+    LARGE_LANDOWNER_TABLE_FIGURE_WIDTH,
+    LARGE_LANDOWNER_TABLE_NUMERIC_COLUMNS,
+    LARGE_LANDOWNER_TABLE_TITLE,
+    MILL_CONSUMPTION_CHANGE_SUFFIXES,
+    MILL_CONSUMPTION_ROW_STYLES,
+    MILL_CONSUMPTION_TABLE_COLUMN_WIDTHS,
+    MILL_CONSUMPTION_TABLE_COLUMN_WIDTHS_WITH_PREV,
+    MILL_CONSUMPTION_TABLE_FIGURE_WIDTH,
+    MILL_CONSUMPTION_YEAR_LABELS,
+)
 from .io import DEFAULT_CHART_OUTPUT_DIR
 
 
@@ -300,15 +326,7 @@ def build_mill_consumption_change_total_row(
 def _mill_consumption_change_row_style(change_type: str) -> tuple[str, str]:
     """Return (background, text) colors for a mill-change row type."""
     key = str(change_type).strip().lower()
-    if key in {"increase", "new"}:
-        return "#86d98b", "#111111"
-    if key == "decrease":
-        return "#e7e2bc", "#111111"
-    if key == "at-risk":
-        return "#f9ad00", "#111111"
-    if key == "closure":
-        return "#ff6448", "#ffffff"
-    return "#ffffff", "#111111"
+    return MILL_CONSUMPTION_ROW_STYLES.get(key, ("#ffffff", "#111111"))
 
 
 def generate_mill_consumption_change_table_png(
@@ -356,22 +374,16 @@ def generate_mill_consumption_change_table_png(
     :rtype: dict[str, Any]
     :raises ValueError: If no rows remain after filtering.
     """
-    default_year_labels = {
-        "prev": "2023",
-        "curr": "2024",
-        "future": "2029",
-    }
-
     if include_prev_column is False and from_column == "curr" and to_column == "future":
         include_prev_column = True
 
-    resolved_from_label = from_label or default_year_labels.get(
+    resolved_from_label = from_label or MILL_CONSUMPTION_YEAR_LABELS.get(
         from_column, from_column.replace("_", " ").title()
     )
-    resolved_to_label = to_label or default_year_labels.get(
+    resolved_to_label = to_label or MILL_CONSUMPTION_YEAR_LABELS.get(
         to_column, to_column.replace("_", " ").title()
     )
-    resolved_prev_label = prev_label or default_year_labels.get(
+    resolved_prev_label = prev_label or MILL_CONSUMPTION_YEAR_LABELS.get(
         prev_column, prev_column.replace("_", " ").title()
     )
 
@@ -403,9 +415,9 @@ def generate_mill_consumption_change_table_png(
     if include_prev_column:
         numeric_columns = [prev_column] + numeric_columns
 
-    column_widths = [0.46, 0.14, 0.14, 0.14]
+    column_widths = MILL_CONSUMPTION_TABLE_COLUMN_WIDTHS.copy()
     if include_prev_column:
-        column_widths = [0.39, 0.12, 0.12, 0.12, 0.12]
+        column_widths = MILL_CONSUMPTION_TABLE_COLUMN_WIDTHS_WITH_PREV.copy()
 
     row_background_colors: list[str] = []
     row_text_colors: list[str] = []
@@ -420,11 +432,11 @@ def generate_mill_consumption_change_table_png(
         columns=columns,
         numeric_columns=numeric_columns,
         summary_rows=summary_rows,
-        summary_value_suffixes={"change": " MMBF"},
+        summary_value_suffixes=MILL_CONSUMPTION_CHANGE_SUFFIXES,
         data_row_background_colors=row_background_colors,
         data_row_text_colors=row_text_colors,
         column_widths=column_widths,
-        figure_width=10.0,
+        figure_width=MILL_CONSUMPTION_TABLE_FIGURE_WIDTH,
         title=title,
     )
     result["total_change"] = total_change
@@ -488,8 +500,8 @@ def generate_delivery_by_area_table_png(
         {"key": area_name, "label": area_name} for area_name in area_names
     ]
 
-    first_column_width = 0.16
-    remaining_width = 0.84
+    first_column_width = DELIVERY_BY_AREA_TABLE_FIRST_COLUMN_WIDTH
+    remaining_width = DELIVERY_BY_AREA_TABLE_REMAINING_WIDTH
     per_area_width = remaining_width / max(1, len(area_names))
     column_widths = [first_column_width] + [per_area_width] * len(area_names)
 
@@ -499,11 +511,11 @@ def generate_delivery_by_area_table_png(
         columns=columns,
         numeric_columns=area_names,
         summary_rows=None,
-        data_row_background_colors=["#58a8db", "#b8d871", "#efd35e"],
-        data_row_text_colors=["#ffffff", "#1a1a1a", "#1a1a1a"],
+        data_row_background_colors=DELIVERY_BY_AREA_TABLE_ROW_BACKGROUND_COLORS,
+        data_row_text_colors=DELIVERY_BY_AREA_TABLE_ROW_TEXT_COLORS,
         highlight_summary_rows=False,
         column_widths=column_widths,
-        figure_width=14.0,
+        figure_width=DELIVERY_BY_AREA_TABLE_FIGURE_WIDTH,
         title=title,
     )
 
@@ -615,7 +627,7 @@ def generate_large_landowner_table_png(
     rows: list[dict[str, Any]],
     output_path: str = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "large_landowners_table.png"),
     *,
-    title: str = "Landowner Level Data",
+    title: str = LARGE_LANDOWNER_TABLE_TITLE,
     top_n: int = 10,
     woodbasket_name: str | None = None,
 ) -> dict[str, Any]:
@@ -641,31 +653,15 @@ def generate_large_landowner_table_png(
         include_mill_rows=True,
     )
 
-    columns = [
-        {"key": "rank", "label": "Rank"},
-        {"key": "landowner_name", "label": "Landowner Name"},
-        {"key": "total_acres_owned", "label": "Total Acres Owned"},
-        {"key": "acres_within_woodbasket", "label": "Acres Within Woodbasket"},
-        {"key": "mill_name", "label": "Mill Name"},
-        {"key": "city", "label": "City"},
-        {"key": "state", "label": "State"},
-        {"key": "county", "label": "County"},
-        {"key": "ils_id", "label": "ILS_ID"},
-        {"key": "forisk_id", "label": "Forisk_ID"},
-        {"key": "lims_destination_id", "label": "LIMS_Destination_ID"},
-    ]
-    numeric_columns = ["rank", "total_acres_owned", "acres_within_woodbasket"]
-    column_widths = [0.05, 0.17, 0.11, 0.12, 0.12, 0.075, 0.05, 0.08, 0.07, 0.07, 0.135]
-
     return generate_table_png(
         rows=table_rows,
         output_path=output_path,
-        columns=columns,
-        numeric_columns=numeric_columns,
+        columns=LARGE_LANDOWNER_TABLE_COLUMNS,
+        numeric_columns=LARGE_LANDOWNER_TABLE_NUMERIC_COLUMNS,
         summary_rows=None,
         highlight_summary_rows=False,
-        column_widths=column_widths,
-        figure_width=15.5,
+        column_widths=LARGE_LANDOWNER_TABLE_COLUMN_WIDTHS,
+        figure_width=LARGE_LANDOWNER_TABLE_FIGURE_WIDTH,
         title=title,
     )
 
@@ -783,7 +779,10 @@ def generate_table_png(
 
     row_count = len(rendered_rows)
     figure_height = max(4.0, 1.6 + row_count * 0.42)
-    figure, axis = plt.subplots(figsize=(figure_width, figure_height), dpi=150)
+    figure, axis = plt.subplots(
+        figsize=(figure_width, figure_height),
+        dpi=DEFAULT_TABLE_DPI,
+    )
     try:
         axis.axis("off")
 
@@ -799,16 +798,16 @@ def generate_table_png(
             loc="center",
         )
         table.auto_set_font_size(False)
-        table.set_fontsize(10)
-        table.scale(1, 1.2)
+        table.set_fontsize(DEFAULT_TABLE_FONT_SIZE)
+        table.scale(1, DEFAULT_TABLE_SCALE_Y)
 
         for (row_index, column_index), cell in table.get_celld().items():
-            cell.set_edgecolor("#c8cdd0")
-            cell.set_linewidth(0.5)
+            cell.set_edgecolor(DEFAULT_TABLE_EDGE_COLOR)
+            cell.set_linewidth(DEFAULT_TABLE_LINE_WIDTH)
 
             if row_index == 0:
                 cell.set_text_props(weight="bold")
-                cell.set_facecolor("#f3f6f7")
+                cell.set_facecolor(DEFAULT_TABLE_HEADER_BACKGROUND)
 
             if row_index > 0:
                 key = column_keys[column_index]
@@ -830,8 +829,8 @@ def generate_table_png(
                 and row_index >= (len(rows) + 1)
                 and row_index > 0
             ):
-                cell.set_text_props(weight="bold", color="#0b3d4a")
-                cell.set_facecolor("#eef2f1")
+                cell.set_text_props(weight="bold", color=DEFAULT_TABLE_SUMMARY_TEXT_COLOR)
+                cell.set_facecolor(DEFAULT_TABLE_SUMMARY_BACKGROUND)
             elif row_index > 0 and column_keys[column_index] in right_align_key_set:
                 cell.set_text_props(ha="right")
 
