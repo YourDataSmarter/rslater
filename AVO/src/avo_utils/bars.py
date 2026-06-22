@@ -390,3 +390,97 @@ def generate_large_landowner_bar_chart_png(
         series_colors=series_colors,
         y_divisor=1000,
     )
+
+
+def build_mill_consumption_change_bar_data(
+    rows: list[dict[str, Any]],
+    *,
+    name_column: str = "name",
+    prev_column: str = "prev",
+    curr_column: str = "curr",
+    future_column: str = "future",
+    product_column: str = "product",
+    product_name: str | None = None,
+    category_column: str = "mill",
+) -> tuple[list[dict[str, Any]], list[str], dict[str, str], list[str]]:
+    """Build grouped-bar data from mill-consumption change rows.
+
+    Missing period values are normalized to ``0`` so the chart shape remains
+    consistent across mills and future-only rows.
+    """
+    if not rows:
+        raise ValueError("rows must contain at least one item")
+
+    required_columns = [name_column, prev_column, curr_column, future_column]
+    if product_name:
+        required_columns.append(product_column)
+
+    missing_columns: dict[str, list[int]] = {}
+    for column in required_columns:
+        missing_indexes = [i for i, row in enumerate(rows) if column not in row]
+        if missing_indexes:
+            missing_columns[column] = missing_indexes
+    if missing_columns:
+        raise ValueError(f"missing required columns in rows: {missing_columns}")
+
+    chart_rows: list[dict[str, Any]] = []
+    for row in rows:
+        if product_name and str(row.get(product_column, "")) != product_name:
+            continue
+
+        prev_value = row.get(prev_column)
+        curr_value = row.get(curr_column)
+        future_value = row.get(future_column)
+        if prev_value is None and curr_value is None and future_value is None:
+            continue
+
+        chart_rows.append(
+            {
+                category_column: str(row[name_column]),
+                prev_column: float(prev_value or 0.0),
+                curr_column: float(curr_value or 0.0),
+                future_column: float(future_value or 0.0),
+            }
+        )
+
+    if not chart_rows:
+        raise ValueError("no mill consumption rows available for the requested filter")
+
+    series_columns = [prev_column, curr_column, future_column]
+    series_labels = {
+        prev_column: "2023",
+        curr_column: "2024",
+        future_column: "2028/2029 ESH/WHITE",
+    }
+    series_colors = ["#b0c4de", "#6495ed", "#4682b4"]
+    return chart_rows, series_columns, series_labels, series_colors
+
+
+def generate_mill_consumption_change_bar_chart_png(
+    rows: list[dict[str, Any]],
+    output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "mill_consumption_changes_bar_chart.png"),
+    *,
+    title: str = "Expected Log Consumption Changes 2023 - 2028/2029 (MMBF)",
+    product_name: str | None = None,
+) -> dict[str, Any]:
+    """Generate grouped bar chart PNG for mill consumption change rows."""
+    chart_rows, series_columns, series_labels, series_colors = (
+        build_mill_consumption_change_bar_data(
+            rows,
+            product_name=product_name,
+            category_column="mill",
+        )
+    )
+
+    return generate_bar_chart_png(
+        rows=chart_rows,
+        category_column="mill",
+        series_columns=series_columns,
+        output_path=output_path,
+        title=title,
+        y_label="MMBF",
+        series_labels=series_labels,
+        stacked=False,
+        series_colors=series_colors,
+        y_divisor=1.0,
+    )

@@ -1,0 +1,11 @@
+[
+    { "name": "Longview Sawmill", "prev": 170, "curr": 181, "future": 185, "type": "increase", "product": "Douglas Fir" },
+    { "name": "Santiam Saw Mill", "prev": 190, "curr": 196, "future": 200, "type": "increase", "product": "Douglas Fir" },
+    { "name": "Stimson Clatskanie", "prev": 45, "curr": 40, "future": 38, "type": "decrease", "product": "Douglas Fir" },
+    { "name": "Swanson Bros. Noti", "prev": 25, "curr": 20, "future": 0, "type": "closure", "product": "Douglas Fir" },
+    { "name": "Hampton Banks", "prev": 45, "curr": 40, "future": 0, "type": "closure", "product": "Whitewood" },
+    { "name": "CAD Lumber Riddle", "prev": 30, "curr": 25, "future": 10, "type": "at-risk", "product": "Whitewood" },
+    { "name": "Interfor Philomath", "prev": 120, "curr": 101, "future": 0, "type": "closure", "product": "Whitewood" },
+    { "name": "New Mill 3", "prev": null, "curr": null, "future": 190, "type": "new", "product": "Douglas Fir" },
+    { "name": "New Mill 4", "prev": null, "curr": null, "future": 120, "type": "new", "product": "Whitewood" }
+]

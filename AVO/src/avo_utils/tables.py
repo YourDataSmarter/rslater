@@ -201,6 +201,238 @@ def build_percent_acres_rows(
     return result
 
 
+def build_mill_consumption_change_rows(
+    rows: list[dict[str, Any]],
+    *,
+    from_column: str,
+    to_column: str,
+    name_column: str = "name",
+    change_type_column: str = "type",
+    product_column: str = "product",
+    product_name: str | None = None,
+    passthrough_columns: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Build mill-consumption change rows for a specific period.
+
+    Rows are included only when both source and destination values are present.
+
+    :param rows: Raw mill consumption change rows.
+    :type rows: list[dict[str, Any]]
+    :param from_column: Baseline numeric column key.
+    :type from_column: str
+    :param to_column: Destination numeric column key.
+    :type to_column: str
+    :param name_column: Mill name column key.
+    :type name_column: str
+    :param change_type_column: Change-type column key.
+    :type change_type_column: str
+    :param product_column: Product/species column key.
+    :type product_column: str
+    :param product_name: Optional product filter (for example Douglas Fir).
+    :type product_name: str | None
+    :param passthrough_columns: Optional extra columns to copy into output rows.
+    :type passthrough_columns: list[str] | None
+    :returns: Table-ready rows including a computed ``change`` field.
+    :rtype: list[dict[str, Any]]
+    :raises ValueError: If required columns are missing.
+    """
+    if not rows:
+        raise ValueError("rows must contain at least one item")
+
+    required_columns = [name_column, from_column, to_column]
+    if product_name:
+        required_columns.append(product_column)
+    passthrough_columns = passthrough_columns or []
+    for column in passthrough_columns:
+        if column not in required_columns:
+            required_columns.append(column)
+
+    missing_columns: dict[str, list[int]] = {}
+    for column in required_columns:
+        missing_indexes = [i for i, row in enumerate(rows) if column not in row]
+        if missing_indexes:
+            missing_columns[column] = missing_indexes
+
+    if missing_columns:
+        raise ValueError(f"missing required columns in rows: {missing_columns}")
+
+    table_rows: list[dict[str, Any]] = []
+    for row in rows:
+        if product_name and str(row.get(product_column, "")) != product_name:
+            continue
+
+        start_value = row.get(from_column)
+        end_value = row.get(to_column)
+        if start_value is None or end_value is None:
+            continue
+
+        start_number = float(start_value)
+        end_number = float(end_value)
+        output_row: dict[str, Any] = {
+            "name": str(row[name_column]),
+            from_column: start_number,
+            to_column: end_number,
+            "change": end_number - start_number,
+            "type": str(row.get(change_type_column, "")),
+            "product": str(row.get(product_column, "")),
+        }
+        for column in passthrough_columns:
+            value = row.get(column)
+            output_row[column] = float(value) if value is not None else None
+
+        table_rows.append(output_row)
+
+    return table_rows
+
+
+def build_mill_consumption_change_total_row(
+    rows: list[dict[str, Any]],
+    *,
+    label_column: str = "name",
+    label: str = "Total Change",
+    change_column: str = "change",
+) -> tuple[list[dict[str, Any]], float]:
+    """Build a single total row for mill-consumption change tables."""
+    total_change = sum(float(row.get(change_column, 0.0)) for row in rows)
+    return [{label_column: label, change_column: total_change}], total_change
+
+
+def _mill_consumption_change_row_style(change_type: str) -> tuple[str, str]:
+    """Return (background, text) colors for a mill-change row type."""
+    key = str(change_type).strip().lower()
+    if key in {"increase", "new"}:
+        return "#86d98b", "#111111"
+    if key == "decrease":
+        return "#e7e2bc", "#111111"
+    if key == "at-risk":
+        return "#f9ad00", "#111111"
+    if key == "closure":
+        return "#ff6448", "#ffffff"
+    return "#ffffff", "#111111"
+
+
+def generate_mill_consumption_change_table_png(
+    rows: list[dict[str, Any]],
+    *,
+    from_column: str,
+    to_column: str,
+    output_path: str,
+    title: str,
+    total_label: str = "Total Change",
+    product_name: str | None = None,
+    from_label: str | None = None,
+    to_label: str | None = None,
+    include_prev_column: bool = False,
+    prev_column: str = "prev",
+    prev_label: str = "2023",
+) -> dict[str, Any]:
+    """Generate a mill-consumption change table PNG for a selected period.
+
+    :param rows: Raw mill consumption change rows.
+    :type rows: list[dict[str, Any]]
+    :param from_column: Baseline numeric column key.
+    :type from_column: str
+    :param to_column: Destination numeric column key.
+    :type to_column: str
+    :param output_path: Destination path for the PNG file.
+    :type output_path: str
+    :param title: Table title.
+    :type title: str
+    :param total_label: Label text for the summary row.
+    :type total_label: str
+    :param product_name: Optional product filter.
+    :type product_name: str | None
+    :param from_label: Optional display label for the baseline column.
+    :type from_label: str | None
+    :param to_label: Optional display label for the destination column.
+    :type to_label: str | None
+    :param include_prev_column: Whether to show a previous-year display column.
+    :type include_prev_column: bool
+    :param prev_column: Previous-year column key.
+    :type prev_column: str
+    :param prev_label: Display label for previous-year column.
+    :type prev_label: str
+    :returns: Metadata about the generated table image.
+    :rtype: dict[str, Any]
+    :raises ValueError: If no rows remain after filtering.
+    """
+    default_year_labels = {
+        "prev": "2023",
+        "curr": "2024",
+        "future": "2029",
+    }
+
+    if include_prev_column is False and from_column == "curr" and to_column == "future":
+        include_prev_column = True
+
+    resolved_from_label = from_label or default_year_labels.get(
+        from_column, from_column.replace("_", " ").title()
+    )
+    resolved_to_label = to_label or default_year_labels.get(
+        to_column, to_column.replace("_", " ").title()
+    )
+    resolved_prev_label = prev_label or default_year_labels.get(
+        prev_column, prev_column.replace("_", " ").title()
+    )
+
+    table_rows = build_mill_consumption_change_rows(
+        rows,
+        from_column=from_column,
+        to_column=to_column,
+        product_name=product_name,
+        passthrough_columns=[prev_column] if include_prev_column else None,
+    )
+    if not table_rows:
+        raise ValueError("no mill consumption change rows available for the requested filter")
+
+    summary_rows, total_change = build_mill_consumption_change_total_row(
+        table_rows,
+        label=total_label,
+    )
+
+    columns = [{"key": "name", "label": "Mill"}]
+    if include_prev_column:
+        columns.append({"key": prev_column, "label": resolved_prev_label})
+    columns.extend([
+        {"key": from_column, "label": resolved_from_label},
+        {"key": to_column, "label": resolved_to_label},
+        {"key": "change", "label": "Change"},
+    ])
+
+    numeric_columns = [from_column, to_column, "change"]
+    if include_prev_column:
+        numeric_columns = [prev_column] + numeric_columns
+
+    column_widths = [0.46, 0.14, 0.14, 0.14]
+    if include_prev_column:
+        column_widths = [0.39, 0.12, 0.12, 0.12, 0.12]
+
+    row_background_colors: list[str] = []
+    row_text_colors: list[str] = []
+    for row in table_rows:
+        bg, fg = _mill_consumption_change_row_style(str(row.get("type", "")))
+        row_background_colors.append(bg)
+        row_text_colors.append(fg)
+
+    result = generate_table_png(
+        rows=table_rows,
+        output_path=output_path,
+        columns=columns,
+        numeric_columns=numeric_columns,
+        summary_rows=summary_rows,
+        summary_value_suffixes={"change": " MMBF"},
+        data_row_background_colors=row_background_colors,
+        data_row_text_colors=row_text_colors,
+        column_widths=column_widths,
+        figure_width=10.0,
+        title=title,
+    )
+    result["total_change"] = total_change
+    result["column_keys"] = [column["key"] for column in columns]
+    result["column_labels"] = [column["label"] for column in columns]
+    return result
+
+
 def build_large_landowner_table_rows(
     rows: list[dict[str, Any]],
     *,
@@ -371,6 +603,9 @@ def generate_table_png(
     numeric_columns: list[str] | None = None,
     percent_columns: list[str] | None = None,
     summary_rows: list[dict[str, Any]] | None = None,
+    summary_value_suffixes: dict[str, str] | None = None,
+    data_row_background_colors: list[str] | None = None,
+    data_row_text_colors: list[str] | None = None,
     highlight_summary_rows: bool = True,
     column_widths: list[float] | None = None,
     figure_width: float = 12.0,
@@ -390,6 +625,12 @@ def generate_table_png(
     :type percent_columns: list[str] | None
     :param summary_rows: Optional extra rows appended at the end.
     :type summary_rows: list[dict[str, Any]] | None
+    :param summary_value_suffixes: Optional suffixes appended to summary values by key.
+    :type summary_value_suffixes: dict[str, str] | None
+    :param data_row_background_colors: Optional background colors for data rows.
+    :type data_row_background_colors: list[str] | None
+    :param data_row_text_colors: Optional text colors for data rows.
+    :type data_row_text_colors: list[str] | None
     :param highlight_summary_rows: Whether to style summary rows.
     :type highlight_summary_rows: bool
     :param column_widths: Optional normalized width list for rendered columns.
@@ -422,6 +663,12 @@ def generate_table_png(
     if column_widths is not None and len(column_widths) != len(column_keys):
         raise ValueError("column_widths must have the same length as columns")
 
+    if data_row_background_colors is not None and len(data_row_background_colors) != len(rows):
+        raise ValueError("data_row_background_colors must have the same length as rows")
+
+    if data_row_text_colors is not None and len(data_row_text_colors) != len(rows):
+        raise ValueError("data_row_text_colors must have the same length as rows")
+
     missing_columns: dict[str, list[int]] = {}
     for column in column_keys:
         missing_indexes = [i for i, row in enumerate(rows) if column not in row]
@@ -434,8 +681,13 @@ def generate_table_png(
     output = Path(output_path).expanduser().resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
 
-    def _render_cell(row: dict[str, Any], key: str) -> str:
+    summary_value_suffixes = summary_value_suffixes or {}
+
+    def _render_cell(row: dict[str, Any], key: str, *, is_summary_row: bool = False) -> str:
         value = row.get(key)
+        if is_summary_row and key in summary_value_suffixes and value is not None:
+            formatted = _format_cell_value(value, key in numeric_key_set)
+            return f"{formatted}{summary_value_suffixes[key]}"
         if key in percent_key_set:
             if value is None:
                 return ""
@@ -448,7 +700,9 @@ def generate_table_png(
 
     summary_rows = summary_rows or []
     for row in summary_rows:
-        rendered_rows.append([_render_cell(row, key) for key in column_keys])
+        rendered_rows.append([
+            _render_cell(row, key, is_summary_row=True) for key in column_keys
+        ])
 
     plt = _get_pyplot_module()
 
@@ -487,6 +741,13 @@ def generate_table_png(
                     cell.set_text_props(ha="right")
                 else:
                     cell.set_text_props(ha="left")
+
+                data_row_index = row_index - 1
+                if data_row_index < len(rows):
+                    if data_row_background_colors is not None:
+                        cell.set_facecolor(data_row_background_colors[data_row_index])
+                    if data_row_text_colors is not None:
+                        cell.set_text_props(color=data_row_text_colors[data_row_index])
 
             if (
                 highlight_summary_rows

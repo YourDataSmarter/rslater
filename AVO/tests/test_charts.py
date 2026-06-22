@@ -624,6 +624,12 @@ def load_mock_large_landowner_rows() -> list[dict[str, object]]:
     return json.loads(data_file.read_text(encoding="utf-8"))
 
 
+def load_mock_mill_consumption_change_rows() -> list[dict[str, object]]:
+    """Load mill consumption change mock rows from JSON test data."""
+    data_file = MOCK_DATA_DIR / "mill_consumption_change_rows.json"
+    return json.loads(data_file.read_text(encoding="utf-8"))
+
+
 def test_build_large_landowner_pie_rows_top10_and_other() -> None:
     """Large landowner pie rows should include top 10 plus an Other row."""
     from avo_utils.pies import build_large_landowner_pie_rows
@@ -760,3 +766,154 @@ def test_generate_large_landowner_table_png_to_output_dir() -> None:
 
     assert os.path.isfile(output)
     assert result["data_row_count"] == 14
+
+
+def test_build_mill_consumption_change_rows_recent_and_future() -> None:
+    """Mill consumption table rows should match frontend-style period filters."""
+    from avo_utils.tables import (
+        build_mill_consumption_change_rows,
+        build_mill_consumption_change_total_row,
+    )
+
+    rows = load_mock_mill_consumption_change_rows()
+
+    recent_rows = build_mill_consumption_change_rows(
+        rows,
+        from_column="prev",
+        to_column="curr",
+    )
+    future_rows = build_mill_consumption_change_rows(
+        rows,
+        from_column="curr",
+        to_column="future",
+    )
+    df_recent_rows = build_mill_consumption_change_rows(
+        rows,
+        from_column="prev",
+        to_column="curr",
+        product_name="Douglas Fir",
+    )
+
+    _, recent_total = build_mill_consumption_change_total_row(recent_rows)
+    _, future_total = build_mill_consumption_change_total_row(future_rows)
+
+    assert len(recent_rows) == 7
+    assert len(future_rows) == 7
+    assert len(df_recent_rows) == 4
+    assert recent_rows[0]["name"] == "Longview Sawmill"
+    assert recent_rows[0]["change"] == pytest.approx(11.0)
+    assert recent_total == pytest.approx(-22.0)
+    assert future_total == pytest.approx(-170.0)
+
+
+def test_generate_mill_consumption_change_table_png_creates_file(tmp_path) -> None:
+    """Mill consumption table PNG should render recent-change rows and total."""
+    from avo_utils.tables import generate_mill_consumption_change_table_png
+
+    output = str(tmp_path / "mill_consumption_recent_table.png")
+    rows = load_mock_mill_consumption_change_rows()
+    result = generate_mill_consumption_change_table_png(
+        rows,
+        from_column="prev",
+        to_column="curr",
+        from_label="2023",
+        to_label="2024",
+        output_path=output,
+        title="All Products - Recent Changes",
+        total_label="Total Change",
+    )
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["data_row_count"] == 7
+    assert result["summary_row_count"] == 1
+    assert result["total_change"] == pytest.approx(-22.0)
+
+
+def test_generate_mill_consumption_change_future_table_with_prev_column(tmp_path) -> None:
+    """Future mill table should support showing 2023 while changing 2024 -> 2029."""
+    from avo_utils.tables import generate_mill_consumption_change_table_png
+
+    output = str(tmp_path / "mill_consumption_future_table_with_prev.png")
+    rows = load_mock_mill_consumption_change_rows()
+    result = generate_mill_consumption_change_table_png(
+        rows,
+        from_column="curr",
+        to_column="future",
+        from_label="2024",
+        to_label="2029",
+        include_prev_column=True,
+        prev_column="prev",
+        prev_label="2023",
+        output_path=output,
+        title="All Products - Future Changes",
+        total_label="Total Change",
+    )
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["data_row_count"] == 7
+    assert result["summary_row_count"] == 1
+    assert result["total_change"] == pytest.approx(-170.0)
+
+
+def test_generate_mill_consumption_change_table_defaults_recent_labels(tmp_path) -> None:
+    """Recent table should default to Mill/2023/2024/Change labels."""
+    from avo_utils.tables import generate_mill_consumption_change_table_png
+
+    output = str(tmp_path / "mill_consumption_df_recent_default_labels.png")
+    rows = load_mock_mill_consumption_change_rows()
+    result = generate_mill_consumption_change_table_png(
+        rows,
+        from_column="prev",
+        to_column="curr",
+        product_name="Douglas Fir",
+        output_path=output,
+        title="Recent Changes",
+        total_label="Total Change DF",
+    )
+
+    assert result["column_labels"] == ["Mill", "2023", "2024", "Change"]
+    assert result["column_keys"] == ["name", "prev", "curr", "change"]
+    assert result["total_change"] == pytest.approx(7.0)
+
+
+def test_generate_mill_consumption_change_table_defaults_future_labels(tmp_path) -> None:
+    """Future table should default to Mill/2023/2024/2029/Change labels."""
+    from avo_utils.tables import generate_mill_consumption_change_table_png
+
+    output = str(tmp_path / "mill_consumption_ww_future_default_labels.png")
+    rows = load_mock_mill_consumption_change_rows()
+    result = generate_mill_consumption_change_table_png(
+        rows,
+        from_column="curr",
+        to_column="future",
+        product_name="Whitewood",
+        output_path=output,
+        title="Future Changes",
+        total_label="Total Change WW",
+    )
+
+    assert result["column_labels"] == ["Mill", "2023", "2024", "2029", "Change"]
+    assert result["column_keys"] == ["name", "prev", "curr", "future", "change"]
+    assert result["total_change"] == pytest.approx(-156.0)
+
+
+def test_generate_mill_consumption_change_bar_chart_png_creates_file(tmp_path) -> None:
+    """Mill consumption grouped bar PNG should render 2023/2024/future series."""
+    from avo_utils.bars import generate_mill_consumption_change_bar_chart_png
+
+    output = str(tmp_path / "mill_consumption_bar.png")
+    rows = load_mock_mill_consumption_change_rows()
+    result = generate_mill_consumption_change_bar_chart_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["category_count"] == 9
+    assert result["series_count"] == 3
+    assert result["series_totals"]["prev"] == pytest.approx(625.0)
+    assert result["series_totals"]["curr"] == pytest.approx(603.0)
+    assert result["series_totals"]["future"] == pytest.approx(743.0)
