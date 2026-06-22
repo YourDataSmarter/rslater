@@ -7,8 +7,22 @@ from typing import Any
 
 from .configs import (
     GOV_TRIBAL_COLOR,
+    LARGE_LANDOWNER_PIE_LEGEND_NCOL,
     NON_TOP10_COLOR,
+    OTHER_SLICE_COLOR,
+    PIE_DEFAULT_LEGEND_NCOL_MAX,
+    PIE_DEFAULT_LEGEND_Y,
+    PIE_DEFAULT_RADIUS,
+    PIE_DPI,
+    PIE_FIGURE_SIZE,
     PRIVATE_PALETTE,
+    TOP_CUSTOMER_PALETTE,
+    TOP_CUSTOMER_PIE_LEGEND_Y,
+    TOP_CUSTOMER_PIE_RADIUS,
+    TOP_DESTINATION_PALETTE,
+    TOP_PIE_LEGEND_NCOL,
+    TOP_PIE_LEGEND_Y,
+    TOP_PIE_RADIUS,
     WEYERHAEUSER_COLOR,
 )
 from .io import DEFAULT_PIE_CHART_OUTPUT_DIR
@@ -35,6 +49,37 @@ def _get_pyplot_module() -> Any:
         ) from exc
 
 
+def _build_ranked_label_colors(
+    rows: list[dict[str, Any]],
+    *,
+    label_column: str,
+    value_column: str,
+    palette: list[str],
+    other_label: str = "Other",
+    other_color: str = OTHER_SLICE_COLOR,
+) -> dict[str, str]:
+    """Return deterministic label-color mapping ranked by descending values."""
+    ranked_rows = sorted(rows, key=lambda row: float(row[value_column]), reverse=True)
+    label_colors: dict[str, str] = {}
+    color_index = 0
+
+    for row in ranked_rows:
+        label = str(row[label_column]).strip()
+        if not label:
+            continue
+        if label in label_colors:
+            continue
+
+        if label.lower() == other_label.lower():
+            label_colors[label] = other_color
+            continue
+
+        label_colors[label] = palette[color_index % len(palette)]
+        color_index += 1
+
+    return label_colors
+
+
 def generate_pie_chart_png(
     rows: list[dict[str, Any]],
     label_column: str,
@@ -44,6 +89,9 @@ def generate_pie_chart_png(
     title: str | None = None,
     label_colors: dict[str, str] | None = None,
     show_slice_labels: bool = True,
+    pie_radius: float = PIE_DEFAULT_RADIUS,
+    legend_bbox_y: float = PIE_DEFAULT_LEGEND_Y,
+    legend_ncol: int | None = None,
 ) -> dict[str, Any]:
     """Generate a PNG export for a pie chart from SQL row data.
 
@@ -63,6 +111,12 @@ def generate_pie_chart_png(
     :type label_colors: dict[str, str] | None
     :param show_slice_labels: Whether to render around-the-pie callout labels.
     :type show_slice_labels: bool
+    :param pie_radius: Radius used for pie rendering.
+    :type pie_radius: float
+    :param legend_bbox_y: Vertical legend anchor (negative values move legend down).
+    :type legend_bbox_y: float
+    :param legend_ncol: Optional fixed legend column count.
+    :type legend_ncol: int | None
     :returns: Metadata about the generated image.
     :rtype: dict[str, Any]
     :raises ValueError: If inputs are invalid or columns are missing.
@@ -111,7 +165,7 @@ def generate_pie_chart_png(
 
     plt = _get_pyplot_module()
 
-    figure, axis = plt.subplots(figsize=(8, 8), dpi=150)
+    figure, axis = plt.subplots(figsize=PIE_FIGURE_SIZE, dpi=PIE_DPI)
     try:
         wedges, _ = axis.pie(
             numeric_values,
@@ -119,6 +173,7 @@ def generate_pie_chart_png(
             startangle=90,
             counterclock=False,
             colors=pie_colors,
+            radius=pie_radius,
         )
 
         if show_slice_labels:
@@ -156,8 +211,8 @@ def generate_pie_chart_png(
             wedges,
             labels,
             loc="lower center",
-            bbox_to_anchor=(0.5, -0.02),
-            ncol=max(1, min(3, len(labels))),
+            bbox_to_anchor=(0.5, legend_bbox_y),
+            ncol=legend_ncol if legend_ncol is not None else max(1, min(PIE_DEFAULT_LEGEND_NCOL_MAX, len(labels))),
             frameon=False,
         )
 
@@ -312,4 +367,65 @@ def generate_large_landowner_pie_chart_png(
         title=title,
         label_colors=label_colors,
         show_slice_labels=False,
+        legend_ncol=LARGE_LANDOWNER_PIE_LEGEND_NCOL,
+    )
+
+
+def generate_top_destination_pie_chart_png(
+    rows: list[dict[str, Any]],
+    output_path: str = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "top_destination_pie_chart.png"),
+    *,
+    title: str = "MMBF",
+    label_column: str = "name",
+    value_column: str = "volume",
+) -> dict[str, Any]:
+    """Generate pie chart PNG for top destination volume data."""
+    label_colors = _build_ranked_label_colors(
+        rows,
+        label_column=label_column,
+        value_column=value_column,
+        palette=TOP_DESTINATION_PALETTE,
+    )
+
+    return generate_pie_chart_png(
+        rows=rows,
+        label_column=label_column,
+        value_column=value_column,
+        output_path=output_path,
+        title=title,
+        label_colors=label_colors,
+        show_slice_labels=False,
+        pie_radius=TOP_PIE_RADIUS,
+        legend_bbox_y=TOP_PIE_LEGEND_Y,
+        legend_ncol=TOP_PIE_LEGEND_NCOL,
+    )
+
+
+def generate_top_customer_pie_chart_png(
+    rows: list[dict[str, Any]],
+    output_path: str = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "top_customer_pie_chart.png"),
+    *,
+    title: str = "MMBF",
+    label_column: str = "name",
+    value_column: str = "volume",
+) -> dict[str, Any]:
+    """Generate pie chart PNG for top customer volume data."""
+    label_colors = _build_ranked_label_colors(
+        rows,
+        label_column=label_column,
+        value_column=value_column,
+        palette=TOP_CUSTOMER_PALETTE,
+    )
+
+    return generate_pie_chart_png(
+        rows=rows,
+        label_column=label_column,
+        value_column=value_column,
+        output_path=output_path,
+        title=title,
+        label_colors=label_colors,
+        show_slice_labels=False,
+        pie_radius=TOP_CUSTOMER_PIE_RADIUS,
+        legend_bbox_y=TOP_CUSTOMER_PIE_LEGEND_Y,
+        legend_ncol=TOP_PIE_LEGEND_NCOL,
     )

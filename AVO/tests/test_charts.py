@@ -630,6 +630,24 @@ def load_mock_mill_consumption_change_rows() -> list[dict[str, object]]:
     return json.loads(data_file.read_text(encoding="utf-8"))
 
 
+def load_mock_top_destination_rows() -> list[dict[str, object]]:
+    """Load top destination mock rows from JSON test data."""
+    data_file = MOCK_DATA_DIR / "top_destination_rows.json"
+    return json.loads(data_file.read_text(encoding="utf-8"))
+
+
+def load_mock_top_customer_rows() -> list[dict[str, object]]:
+    """Load top customer mock rows from JSON test data."""
+    data_file = MOCK_DATA_DIR / "top_customer_rows.json"
+    return json.loads(data_file.read_text(encoding="utf-8"))
+
+
+def load_mock_delivery_by_area_rows() -> list[dict[str, object]]:
+    """Load delivery by area mock rows from JSON test data."""
+    data_file = MOCK_DATA_DIR / "delivery_by_area_rows.json"
+    return json.loads(data_file.read_text(encoding="utf-8"))
+
+
 def test_build_large_landowner_pie_rows_top10_and_other() -> None:
     """Large landowner pie rows should include top 10 plus an Other row."""
     from avo_utils.pies import build_large_landowner_pie_rows
@@ -671,6 +689,68 @@ def test_generate_large_landowner_pie_chart_png_to_output_dir() -> None:
     output = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "mock_large_landowners_pie_chart.png")
     rows = load_mock_large_landowner_rows()
     result = generate_large_landowner_pie_chart_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["label_count"] == 11
+
+
+def test_generate_top_destination_pie_chart_png_creates_file(tmp_path) -> None:
+    """Top destination pie chart should render from mock rows."""
+    from avo_utils.pies import generate_top_destination_pie_chart_png
+
+    output = str(tmp_path / "top_destination_pie.png")
+    rows = load_mock_top_destination_rows()
+    result = generate_top_destination_pie_chart_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["label_count"] == 11
+    assert result["value_total"] == pytest.approx(899.15)
+    assert result["title"] == "MMBF"
+
+
+def test_generate_top_customer_pie_chart_png_creates_file(tmp_path) -> None:
+    """Top customer pie chart should render from mock rows."""
+    from avo_utils.pies import generate_top_customer_pie_chart_png
+
+    output = str(tmp_path / "top_customer_pie.png")
+    rows = load_mock_top_customer_rows()
+    result = generate_top_customer_pie_chart_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["label_count"] == 11
+    assert result["value_total"] == pytest.approx(828.25)
+    assert result["title"] == "MMBF"
+
+
+def test_generate_top_destination_pie_chart_png_to_output_dir() -> None:
+    """Generate top destination pie chart PNG to the real output directory."""
+    from avo_utils.io import DEFAULT_PIE_CHART_OUTPUT_DIR
+    from avo_utils.pies import generate_top_destination_pie_chart_png
+
+    output = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "mock_top_destination_pie_chart.png")
+    rows = load_mock_top_destination_rows()
+    result = generate_top_destination_pie_chart_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["label_count"] == 11
+
+
+def test_generate_top_customer_pie_chart_png_to_output_dir() -> None:
+    """Generate top customer pie chart PNG to the real output directory."""
+    from avo_utils.io import DEFAULT_PIE_CHART_OUTPUT_DIR
+    from avo_utils.pies import generate_top_customer_pie_chart_png
+
+    output = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "mock_top_customer_pie_chart.png")
+    rows = load_mock_top_customer_rows()
+    result = generate_top_customer_pie_chart_png(rows=rows, output_path=output)
 
     import os
 
@@ -917,3 +997,86 @@ def test_generate_mill_consumption_change_bar_chart_png_creates_file(tmp_path) -
     assert result["series_totals"]["prev"] == pytest.approx(625.0)
     assert result["series_totals"]["curr"] == pytest.approx(603.0)
     assert result["series_totals"]["future"] == pytest.approx(743.0)
+
+
+def test_build_delivery_by_area_bar_data_shapes_rows() -> None:
+    """Delivery-by-area bar data should preserve area order and series columns."""
+    from avo_utils.bars import build_delivery_by_area_bar_data
+
+    rows = load_mock_delivery_by_area_rows()
+    chart_rows, series_columns, series_labels, series_colors = build_delivery_by_area_bar_data(rows)
+
+    assert len(chart_rows) == 10
+    assert chart_rows[0]["area"] == "Longview"
+    assert chart_rows[0]["export"] == pytest.approx(60.0)
+    assert series_columns == ["export", "domestic_internal", "domestic_third_party"]
+    assert series_labels["domestic_third_party"] == "Domestic 3rd Party"
+    assert len(series_colors) == 3
+
+
+def test_generate_delivery_by_area_bar_chart_png_creates_file(tmp_path) -> None:
+    """Delivery-by-area stacked bar PNG should render all areas and series totals."""
+    from avo_utils.bars import generate_delivery_by_area_bar_chart_png
+
+    output = str(tmp_path / "delivery_by_area_bar.png")
+    rows = load_mock_delivery_by_area_rows()
+    result = generate_delivery_by_area_bar_chart_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["category_count"] == 10
+    assert result["series_count"] == 3
+    assert result["series_totals"]["export"] == pytest.approx(242.0)
+    assert result["series_totals"]["domestic_internal"] == pytest.approx(465.0)
+    assert result["series_totals"]["domestic_third_party"] == pytest.approx(303.0)
+
+
+def test_build_delivery_by_area_table_rows_pivots_series() -> None:
+    """Delivery-by-area table rows should pivot to three series rows."""
+    from avo_utils.tables import build_delivery_by_area_table_rows
+
+    rows = load_mock_delivery_by_area_rows()
+    table_rows, area_names = build_delivery_by_area_table_rows(rows)
+
+    assert len(table_rows) == 3
+    assert area_names[0] == "Longview"
+    assert table_rows[0]["series"] == "Export"
+    assert table_rows[0]["Longview"] == pytest.approx(60.0)
+    assert table_rows[1]["series"] == "Domestic Internal"
+    assert table_rows[2]["series"] == "Domestic 3rd Party"
+
+
+def test_generate_delivery_by_area_table_png_creates_file(tmp_path) -> None:
+    """Delivery-by-area table PNG should render a 3-row matrix table."""
+    from avo_utils.tables import generate_delivery_by_area_table_png
+
+    output = str(tmp_path / "delivery_by_area_table.png")
+    rows = load_mock_delivery_by_area_rows()
+    result = generate_delivery_by_area_table_png(rows=rows, output_path=output)
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["data_row_count"] == 3
+
+
+def test_generate_delivery_by_area_outputs_to_output_dir() -> None:
+    """Generate delivery-by-area chart and table PNGs to real output directories."""
+    from avo_utils.bars import generate_delivery_by_area_bar_chart_png
+    from avo_utils.io import DEFAULT_BAR_CHART_OUTPUT_DIR, DEFAULT_CHART_OUTPUT_DIR
+    from avo_utils.tables import generate_delivery_by_area_table_png
+
+    rows = load_mock_delivery_by_area_rows()
+    bar_output = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "mock_delivery_by_area_bar_chart.png")
+    table_output = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "mock_delivery_by_area_table.png")
+
+    bar_result = generate_delivery_by_area_bar_chart_png(rows=rows, output_path=bar_output)
+    table_result = generate_delivery_by_area_table_png(rows=rows, output_path=table_output)
+
+    import os
+
+    assert os.path.isfile(bar_output)
+    assert os.path.isfile(table_output)
+    assert bar_result["category_count"] == 10
+    assert table_result["data_row_count"] == 3

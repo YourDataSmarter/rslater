@@ -1,0 +1,12 @@
+[
+    { "area": "Longview",     "export": 60, "domestic_internal": 100, "domestic_third_party": 50 },
+    { "area": "Cathlamet",    "export": 10, "domestic_internal":  25, "domestic_third_party": 15 },
+    { "area": "NW Oregon",    "export": 30, "domestic_internal":  45, "domestic_third_party": 35 },
+    { "area": "Alsea",        "export":  5, "domestic_internal":  30, "domestic_third_party": 20 },
+    { "area": "Clackamas",    "export":  2, "domestic_internal":  25, "domestic_third_party": 18 },
+    { "area": "Mid Coast",    "export": 25, "domestic_internal":  55, "domestic_third_party": 35 },
+    { "area": "Snow Peak",    "export": 15, "domestic_internal":  30, "domestic_third_party": 25 },
+    { "area": "Coos Bay",     "export": 40, "domestic_internal":  60, "domestic_third_party": 40 },
+    { "area": "South Valley", "export": 35, "domestic_internal":  55, "domestic_third_party": 35 },
+    { "area": "Springfield",  "export": 20, "domestic_internal":  40, "domestic_third_party": 30 }
+]

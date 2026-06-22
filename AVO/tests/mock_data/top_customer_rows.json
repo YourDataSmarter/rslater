@@ -1,0 +1,13 @@
+[
+    { "name": "WY (Domestic)", "volume": 367.42 },
+    { "name": "WY (Export)", "volume": 186.69 },
+    { "name": "RSG", "volume": 58.37 },
+    { "name": "Interfor", "volume": 41.74 },
+    { "name": "Swanson Group", "volume": 31.40 },
+    { "name": "Hampton", "volume": 27.18 },
+    { "name": "SPI", "volume": 19.93 },
+    { "name": "Stella Jones", "volume": 12.83 },
+    { "name": "Starfire Lumber", "volume": 10.91 },
+    { "name": "Southport Lumber", "volume": 9.36 },
+    { "name": "Other", "volume": 62.42 }
+]

@@ -46,6 +46,7 @@ def generate_bar_chart_png(
     stacked: bool = False,
     series_colors: list[str] | None = None,
     y_divisor: float = 1.0,
+    show_value_labels: bool = False,
 ) -> dict[str, Any]:
     """Generate a grouped or stacked bar chart PNG from row data.
 
@@ -69,6 +70,8 @@ def generate_bar_chart_png(
     :type series_colors: list[str] | None
     :param y_divisor: Divide all values by this factor before plotting.
     :type y_divisor: float
+    :param show_value_labels: Whether to annotate values on each bar segment.
+    :type show_value_labels: bool
     :returns: Metadata about the generated image.
     :rtype: dict[str, Any]
     :raises ValueError: If inputs are invalid.
@@ -143,7 +146,21 @@ def generate_bar_chart_png(
                 }
                 if color:
                     bar_kwargs["color"] = color
-                axis.bar(x_positions, display_values, **bar_kwargs)
+                bars = axis.bar(x_positions, display_values, **bar_kwargs)
+                if show_value_labels:
+                    for bar, value in zip(bars, display_values):
+                        if value <= 0:
+                            continue
+                        label_text = f"{value:,.0f}" if float(value).is_integer() else f"{value:,.2f}"
+                        axis.text(
+                            bar.get_x() + bar.get_width() / 2,
+                            bar.get_y() + bar.get_height() / 2,
+                            label_text,
+                            ha="center",
+                            va="center",
+                            fontsize=8,
+                            color="#4a4a4a",
+                        )
                 bottoms = [b + v for b, v in zip(bottoms, display_values)]
         else:
             bar_group_width = 0.8
@@ -165,7 +182,21 @@ def generate_bar_chart_png(
                 bar_kwargs = {"width": per_bar_width * 0.95, "label": display_name}
                 if color:
                     bar_kwargs["color"] = color
-                axis.bar(bar_positions, display_values, **bar_kwargs)
+                bars = axis.bar(bar_positions, display_values, **bar_kwargs)
+                if show_value_labels:
+                    for bar, value in zip(bars, display_values):
+                        if value <= 0:
+                            continue
+                        label_text = f"{value:,.0f}" if float(value).is_integer() else f"{value:,.2f}"
+                        axis.text(
+                            bar.get_x() + bar.get_width() / 2,
+                            bar.get_y() + bar.get_height(),
+                            label_text,
+                            ha="center",
+                            va="bottom",
+                            fontsize=8,
+                            color="#4a4a4a",
+                        )
 
         axis.set_xticks(x_positions)
         axis.set_xticklabels(categories, rotation=0, ha="center")
@@ -483,4 +514,85 @@ def generate_mill_consumption_change_bar_chart_png(
         stacked=False,
         series_colors=series_colors,
         y_divisor=1.0,
+    )
+
+
+def build_delivery_by_area_bar_data(
+    rows: list[dict[str, Any]],
+    *,
+    area_column: str = "area",
+    export_column: str = "export",
+    domestic_internal_column: str = "domestic_internal",
+    domestic_third_party_column: str = "domestic_third_party",
+) -> tuple[list[dict[str, Any]], list[str], dict[str, str], list[str]]:
+    """Build stacked-bar payload for delivery-by-area rows."""
+    if not rows:
+        raise ValueError("rows must contain at least one item")
+
+    required_columns = [
+        area_column,
+        export_column,
+        domestic_internal_column,
+        domestic_third_party_column,
+    ]
+    missing_columns: dict[str, list[int]] = {}
+    for column in required_columns:
+        missing_indexes = [i for i, row in enumerate(rows) if column not in row]
+        if missing_indexes:
+            missing_columns[column] = missing_indexes
+    if missing_columns:
+        raise ValueError(f"missing required columns in rows: {missing_columns}")
+
+    chart_rows: list[dict[str, Any]] = []
+    for row in rows:
+        area_name = str(row[area_column]).strip()
+        if not area_name:
+            raise ValueError(f"area_column '{area_column}' contains an empty value")
+
+        export_value = float(row[export_column])
+        domestic_internal_value = float(row[domestic_internal_column])
+        domestic_third_party_value = float(row[domestic_third_party_column])
+        if export_value < 0 or domestic_internal_value < 0 or domestic_third_party_value < 0:
+            raise ValueError("delivery by area values must be non-negative")
+
+        chart_rows.append(
+            {
+                "area": area_name,
+                export_column: export_value,
+                domestic_internal_column: domestic_internal_value,
+                domestic_third_party_column: domestic_third_party_value,
+            }
+        )
+
+    series_columns = [export_column, domestic_internal_column, domestic_third_party_column]
+    series_labels = {
+        export_column: "Export",
+        domestic_internal_column: "Domestic Internal",
+        domestic_third_party_column: "Domestic 3rd Party",
+    }
+    series_colors = ["#58a8db", "#b8d871", "#efd35e"]
+    return chart_rows, series_columns, series_labels, series_colors
+
+
+def generate_delivery_by_area_bar_chart_png(
+    rows: list[dict[str, Any]],
+    output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "delivery_by_area_bar_chart.png"),
+    *,
+    title: str = "2023 Combined DF/WW Deliveries by Area",
+) -> dict[str, Any]:
+    """Generate stacked delivery-by-area bar chart PNG."""
+    chart_rows, series_columns, series_labels, series_colors = build_delivery_by_area_bar_data(rows)
+
+    return generate_bar_chart_png(
+        rows=chart_rows,
+        category_column="area",
+        series_columns=series_columns,
+        output_path=output_path,
+        title=title,
+        y_label="MMBF",
+        series_labels=series_labels,
+        stacked=True,
+        series_colors=series_colors,
+        y_divisor=1.0,
+        show_value_labels=True,
     )

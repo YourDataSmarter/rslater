@@ -433,6 +433,81 @@ def generate_mill_consumption_change_table_png(
     return result
 
 
+def build_delivery_by_area_table_rows(
+    rows: list[dict[str, Any]],
+    *,
+    area_column: str = "area",
+    export_column: str = "export",
+    domestic_internal_column: str = "domestic_internal",
+    domestic_third_party_column: str = "domestic_third_party",
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Pivot delivery-by-area rows into a series-by-area table shape."""
+    if not rows:
+        raise ValueError("rows must contain at least one item")
+
+    required_columns = [
+        area_column,
+        export_column,
+        domestic_internal_column,
+        domestic_third_party_column,
+    ]
+    missing_columns: dict[str, list[int]] = {}
+    for column in required_columns:
+        missing_indexes = [i for i, row in enumerate(rows) if column not in row]
+        if missing_indexes:
+            missing_columns[column] = missing_indexes
+    if missing_columns:
+        raise ValueError(f"missing required columns in rows: {missing_columns}")
+
+    area_names = [str(row[area_column]).strip() for row in rows]
+    if any(not area for area in area_names):
+        raise ValueError(f"area_column '{area_column}' contains an empty value")
+
+    export_row: dict[str, Any] = {"series": "Export"}
+    domestic_internal_row: dict[str, Any] = {"series": "Domestic Internal"}
+    domestic_third_party_row: dict[str, Any] = {"series": "Domestic 3rd Party"}
+
+    for row, area_name in zip(rows, area_names):
+        export_row[area_name] = float(row[export_column])
+        domestic_internal_row[area_name] = float(row[domestic_internal_column])
+        domestic_third_party_row[area_name] = float(row[domestic_third_party_column])
+
+    return [export_row, domestic_internal_row, domestic_third_party_row], area_names
+
+
+def generate_delivery_by_area_table_png(
+    rows: list[dict[str, Any]],
+    output_path: str = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "delivery_by_area_table.png"),
+    *,
+    title: str | None = None,
+) -> dict[str, Any]:
+    """Generate delivery-by-area matrix table PNG with series-colored rows."""
+    table_rows, area_names = build_delivery_by_area_table_rows(rows)
+
+    columns = [{"key": "series", "label": ""}] + [
+        {"key": area_name, "label": area_name} for area_name in area_names
+    ]
+
+    first_column_width = 0.16
+    remaining_width = 0.84
+    per_area_width = remaining_width / max(1, len(area_names))
+    column_widths = [first_column_width] + [per_area_width] * len(area_names)
+
+    return generate_table_png(
+        rows=table_rows,
+        output_path=output_path,
+        columns=columns,
+        numeric_columns=area_names,
+        summary_rows=None,
+        data_row_background_colors=["#58a8db", "#b8d871", "#efd35e"],
+        data_row_text_colors=["#ffffff", "#1a1a1a", "#1a1a1a"],
+        highlight_summary_rows=False,
+        column_widths=column_widths,
+        figure_width=14.0,
+        title=title,
+    )
+
+
 def build_large_landowner_table_rows(
     rows: list[dict[str, Any]],
     *,
