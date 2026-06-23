@@ -25,7 +25,10 @@ from .configs import (
     TOP_PIE_RADIUS,
     WEYERHAEUSER_COLOR,
 )
+from .io import build_visual_output_path
 from .io import DEFAULT_PIE_CHART_OUTPUT_DIR
+from .io import ensure_output_directory
+from .io import resolve_visual_output_path
 
 
 def _get_pyplot_module() -> Any:
@@ -84,9 +87,12 @@ def generate_pie_chart_png(
     rows: list[dict[str, Any]],
     label_column: str,
     value_column: str,
-    output_path: str = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "pie_chart.png"),
+    output_path: str | None = None,
     *,
     title: str | None = None,
+    analysis_component: str | None = None,
+    visual_name: str | None = None,
+    export_format: str = "png",
     label_colors: dict[str, str] | None = None,
     show_slice_labels: bool = True,
     pie_radius: float = PIE_DEFAULT_RADIUS,
@@ -104,9 +110,15 @@ def generate_pie_chart_png(
     :param value_column: Column name to use as pie slice values.
     :type value_column: str
     :param output_path: Destination path for the PNG file.
-    :type output_path: str
+    :type output_path: str | None
     :param title: Optional chart title.
     :type title: str | None
+    :param analysis_component: Optional component token used for default filename generation.
+    :type analysis_component: str | None
+    :param visual_name: Optional visual-name token used for default filename generation.
+    :type visual_name: str | None
+    :param export_format: Visual export format, currently ``png`` or ``pdf``.
+    :type export_format: str
     :param label_colors: Optional mapping of label to hex color.
     :type label_colors: dict[str, str] | None
     :param show_slice_labels: Whether to render around-the-pie callout labels.
@@ -160,8 +172,16 @@ def generate_pie_chart_png(
     if label_colors and all(label in label_colors for label in labels):
         pie_colors = [label_colors[label] for label in labels]
 
-    output = Path(output_path).expanduser().resolve()
-    output.parent.mkdir(parents=True, exist_ok=True)
+    output, resolved_format = resolve_visual_output_path(
+        output_path,
+        default_output_dir=DEFAULT_PIE_CHART_OUTPUT_DIR,
+        default_filename_stem="pie_chart",
+        analysis_component=analysis_component,
+        visual_name=(visual_name or title) if analysis_component else None,
+        visual_kind="graph",
+        export_format=export_format,
+    )
+    ensure_output_directory(str(output))
 
     plt = _get_pyplot_module()
 
@@ -222,7 +242,7 @@ def generate_pie_chart_png(
             axis.set_title(title, pad=2, y=0.97)
 
         figure.tight_layout()
-        figure.savefig(output, format="png", bbox_inches="tight")
+        figure.savefig(output, format=resolved_format, bbox_inches="tight")
 
         width_px = int(figure.get_size_inches()[0] * figure.dpi)
         height_px = int(figure.get_size_inches()[1] * figure.dpi)
@@ -235,6 +255,7 @@ def generate_pie_chart_png(
             "width_px": width_px,
             "height_px": height_px,
             "title": title,
+            "export_format": resolved_format,
         }
     finally:
         plt.close(figure)
@@ -320,7 +341,7 @@ def build_large_landowner_pie_rows(
 
 def generate_large_landowner_pie_chart_png(
     rows: list[dict[str, Any]],
-    output_path: str = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "large_landowners_pie_chart.png"),
+    output_path: str | None = None,
     *,
     title: str = "Largest Landowners (ac.)",
     name_column: str = "name",
@@ -365,6 +386,8 @@ def generate_large_landowner_pie_chart_png(
         value_column=total_column,
         output_path=output_path,
         title=title,
+        analysis_component="large_landowners",
+        visual_name="largest_landowners",
         label_colors=label_colors,
         show_slice_labels=False,
         legend_ncol=LARGE_LANDOWNER_PIE_LEGEND_NCOL,
@@ -373,7 +396,7 @@ def generate_large_landowner_pie_chart_png(
 
 def generate_top_destination_pie_chart_png(
     rows: list[dict[str, Any]],
-    output_path: str = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "top_destination_pie_chart.png"),
+    output_path: str | None = None,
     *,
     title: str = "MMBF",
     label_column: str = "name",
@@ -393,6 +416,8 @@ def generate_top_destination_pie_chart_png(
         value_column=value_column,
         output_path=output_path,
         title=title,
+        analysis_component="top_destination",
+        visual_name="top_destination",
         label_colors=label_colors,
         show_slice_labels=False,
         pie_radius=TOP_PIE_RADIUS,
@@ -403,7 +428,7 @@ def generate_top_destination_pie_chart_png(
 
 def generate_top_customer_pie_chart_png(
     rows: list[dict[str, Any]],
-    output_path: str = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "top_customer_pie_chart.png"),
+    output_path: str | None = None,
     *,
     title: str = "MMBF",
     label_column: str = "name",
@@ -423,6 +448,8 @@ def generate_top_customer_pie_chart_png(
         value_column=value_column,
         output_path=output_path,
         title=title,
+        analysis_component="top_customer",
+        visual_name="top_customer",
         label_colors=label_colors,
         show_slice_labels=False,
         pie_radius=TOP_CUSTOMER_PIE_RADIUS,

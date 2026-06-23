@@ -30,7 +30,11 @@ from .configs import (
     MILL_CONSUMPTION_TABLE_FIGURE_WIDTH,
     MILL_CONSUMPTION_YEAR_LABELS,
 )
+from .io import build_visual_output_path
 from .io import DEFAULT_CHART_OUTPUT_DIR
+from .io import DEFAULT_TABLE_OUTPUT_DIR
+from .io import ensure_output_directory
+from .io import resolve_visual_output_path
 
 
 def _get_pyplot_module() -> Any:
@@ -489,7 +493,7 @@ def build_delivery_by_area_table_rows(
 
 def generate_delivery_by_area_table_png(
     rows: list[dict[str, Any]],
-    output_path: str = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "delivery_by_area_table.png"),
+    output_path: str | None = None,
     *,
     title: str | None = None,
 ) -> dict[str, Any]:
@@ -509,6 +513,8 @@ def generate_delivery_by_area_table_png(
         rows=table_rows,
         output_path=output_path,
         columns=columns,
+        analysis_component="delivery_by_area",
+        visual_name="delivery_by_area",
         numeric_columns=area_names,
         summary_rows=None,
         data_row_background_colors=DELIVERY_BY_AREA_TABLE_ROW_BACKGROUND_COLORS,
@@ -625,7 +631,7 @@ def build_large_landowner_table_rows(
 
 def generate_large_landowner_table_png(
     rows: list[dict[str, Any]],
-    output_path: str = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "large_landowners_table.png"),
+    output_path: str | None = None,
     *,
     title: str = LARGE_LANDOWNER_TABLE_TITLE,
     top_n: int = 10,
@@ -657,6 +663,8 @@ def generate_large_landowner_table_png(
         rows=table_rows,
         output_path=output_path,
         columns=LARGE_LANDOWNER_TABLE_COLUMNS,
+        analysis_component="large_landowners",
+        visual_name="largest_landowners",
         numeric_columns=LARGE_LANDOWNER_TABLE_NUMERIC_COLUMNS,
         summary_rows=None,
         highlight_summary_rows=False,
@@ -668,9 +676,12 @@ def generate_large_landowner_table_png(
 
 def generate_table_png(
     rows: list[dict[str, Any]],
-    output_path: str = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "table.png"),
+    output_path: str | None = None,
     *,
     columns: list[dict[str, str]] | None = None,
+    analysis_component: str | None = None,
+    visual_name: str | None = None,
+    export_format: str = "png",
     numeric_columns: list[str] | None = None,
     percent_columns: list[str] | None = None,
     summary_rows: list[dict[str, Any]] | None = None,
@@ -687,9 +698,15 @@ def generate_table_png(
     :param rows: SQL rows as a list of dicts, one dict per row.
     :type rows: list[dict[str, Any]]
     :param output_path: Destination path for the PNG file.
-    :type output_path: str
+    :type output_path: str | None
     :param columns: Ordered column config items with `key` and optional `label`.
     :type columns: list[dict[str, str]] | None
+    :param analysis_component: Optional component token used for default filename generation.
+    :type analysis_component: str | None
+    :param visual_name: Optional visual-name token used for default filename generation.
+    :type visual_name: str | None
+    :param export_format: Visual export format, currently ``png`` or ``pdf``.
+    :type export_format: str
     :param numeric_columns: Column keys to format/align as numeric.
     :type numeric_columns: list[str] | None
     :param percent_columns: Column keys to format as integer percentages (e.g. ``"67%"``).
@@ -749,8 +766,16 @@ def generate_table_png(
     if missing_columns:
         raise ValueError(f"missing required columns in rows: {missing_columns}")
 
-    output = Path(output_path).expanduser().resolve()
-    output.parent.mkdir(parents=True, exist_ok=True)
+    output, resolved_format = resolve_visual_output_path(
+        output_path,
+        default_output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        default_filename_stem="table",
+        analysis_component=analysis_component,
+        visual_name=(visual_name or title) if analysis_component else None,
+        visual_kind="table",
+        export_format=export_format,
+    )
+    ensure_output_directory(str(output))
 
     summary_value_suffixes = summary_value_suffixes or {}
 
@@ -835,7 +860,7 @@ def generate_table_png(
                 cell.set_text_props(ha="right")
 
         figure.tight_layout()
-        figure.savefig(output, format="png", bbox_inches="tight")
+        figure.savefig(output, format=resolved_format, bbox_inches="tight")
 
         width_px = int(figure.get_size_inches()[0] * figure.dpi)
         height_px = int(figure.get_size_inches()[1] * figure.dpi)
@@ -848,6 +873,7 @@ def generate_table_png(
             "width_px": width_px,
             "height_px": height_px,
             "title": title,
+            "export_format": resolved_format,
         }
     finally:
         plt.close(figure)
@@ -855,7 +881,9 @@ def generate_table_png(
 
 def generate_portfolio_attributes_table_png(
     data: dict[str, Any],
-    output_path: str = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "portfolio_attributes.png"),
+    output_path: str | None = None,
+    *,
+    export_format: str = "png",
 ) -> dict[str, Any]:
     """Generate a PNG export for a sectioned portfolio attributes table.
 
@@ -907,8 +935,16 @@ def generate_portfolio_attributes_table_png(
                 str(row.get("percent", "")),
             ])
 
-    output = Path(output_path).expanduser().resolve()
-    output.parent.mkdir(parents=True, exist_ok=True)
+    output, resolved_format = resolve_visual_output_path(
+        output_path,
+        default_output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        default_filename_stem="portfolio_attributes",
+        analysis_component="portfolio_attributes",
+        visual_name="portfolio_attributes",
+        visual_kind="table",
+        export_format=export_format,
+    )
+    ensure_output_directory(str(output))
 
     plt = _get_pyplot_module()
 
@@ -962,7 +998,7 @@ def generate_portfolio_attributes_table_png(
                     cell.set_text_props(ha="right")
 
         figure.tight_layout()
-        figure.savefig(output, format="png", bbox_inches="tight")
+        figure.savefig(output, format=resolved_format, bbox_inches="tight")
 
         width_px = int(figure.get_size_inches()[0] * figure.dpi)
         height_px = int(figure.get_size_inches()[1] * figure.dpi)
@@ -974,6 +1010,7 @@ def generate_portfolio_attributes_table_png(
             "width_px": width_px,
             "height_px": height_px,
             "title": title,
+            "export_format": resolved_format,
         }
     finally:
         plt.close(figure)

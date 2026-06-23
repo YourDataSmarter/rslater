@@ -1,6 +1,7 @@
 """Tests for CSV export utilities."""
 
 import csv
+from datetime import date
 import json
 from pathlib import Path
 
@@ -182,6 +183,24 @@ def test_export_csv_supports_scalar_list_input(tmp_path) -> None:
 
     assert result["row_count"] == 3
     assert result["fieldnames"] == ["value"]
+
+
+def test_export_csv_builds_convention_named_file_when_metadata_is_supplied() -> None:
+    """CSV export should support per-visual convention naming without an explicit path."""
+    from avo_utils.csv import export_csv
+
+    payload = [{"region": "AO", "total": 100}]
+    result = export_csv(
+        payload,
+        component_name="Delivery By Area",
+        visual_name="Summary Table",
+        exported_by="Riley Slater",
+        export_date=date(2026, 6, 23),
+    )
+
+    output_csv = Path(result["output_path"])
+    assert output_csv.is_file()
+    assert output_csv.name == "delivery_by_area_summary_table_riley_slater_20260623.csv"
 
 
 def test_export_csv_all_mocks_to_output_csv_folder() -> None:

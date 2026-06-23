@@ -80,6 +80,9 @@ Recommended behavior for utility functions:
 
 - Accept plain Python data structures (lists/dicts) or data frames
 - Support explicit output paths and file naming
+- PDF and PNG visual exports are supported; format can be inferred from the output file suffix or requested via `export_format`
+- Default visual filenames follow `[analysis component]_woodbasket-title_{map|graph|table}.[format]` when convention metadata is supplied or specialized helpers are used
+- Per-visual CSV exports default to separate files named `[Component]_[VisualName]_[User]_[Date].csv` when `component_name`, `visual_name`, and `exported_by` are provided to `export_csv(...)`
 - Return metadata where useful (for example, output path, width/height, row counts)
 - Raise clear exceptions with actionable error messages
 
@@ -89,12 +92,12 @@ Recommended behavior for utility functions:
 - Location status: temporary
 - API status: expected to evolve while requirements are refined
 - Module scaffold status: created (`src/avo_utils` and `tests`)
-- Function status: `generate_webmap_png`, `generate_pie_chart_png`, `generate_bar_chart_png`, `generate_table_png`, and `export_csv` are implemented; table logic supports optional summary rows and edge-case helper totals in `src/avo_utils/tables.py`
-- Map template status: `generate_webmap_png` supports template-driven ArcPy PNG export from PAGX/APRX configs, but template-backed behavioral testing is still pending until real templates are available.
+- Function status: `generate_webmap_png`, `generate_pie_chart_png`, `generate_bar_chart_png`, `generate_table_png`, and `export_csv` are implemented; chart, table, and webmap visual exports support PNG and PDF output, and table logic supports optional summary rows and edge-case helper totals in `src/avo_utils/tables.py`
+- Map template status: `generate_webmap_png` supports template-driven ArcPy PNG/PDF export from PAGX/APRX configs, but template-backed behavioral testing is still pending until real templates are available.
 - Test data status: chart mock rows moved to external JSON under `tests/mock_data/`
 - Pie and table chart tests: implemented and passing against file-based mock data
-- Local output folders: created under `output/` for webmaps, charts, and csv
-- Default output paths: wired through shared constants in `src/avo_utils/io.py`; path normalization and output-directory helpers are implemented
+- Local output folders: created under `output/` for webmaps, charts, pdf, and csv
+- Default output paths: wired through shared constants in `src/avo_utils/io.py`; path normalization, naming-convention builders, and output-directory helpers are implemented
 
 ## README Maintenance
 

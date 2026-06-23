@@ -201,6 +201,32 @@ def test_generate_bar_chart_png_for_pine_age_class(tmp_path) -> None:
     assert result["series_totals"]["other_private"] == pytest.approx(2850000.0)
 
 
+def test_generate_bar_chart_pdf_for_pine_age_class(tmp_path) -> None:
+    """Stacked bar chart should support PDF export via output suffix."""
+    from avo_utils.bars import generate_bar_chart_png
+
+    output = str(tmp_path / "pine_age_class_bar.pdf")
+    rows = load_mock_pine_age_class_rows()
+    result = generate_bar_chart_png(
+        rows=rows,
+        category_column="age_class",
+        series_columns=["wy", "other_private"],
+        output_path=output,
+        title="Private Pine Acres by Age Class",
+        y_label="Thousands",
+        series_labels={"wy": "WY", "other_private": "Other Private"},
+        stacked=True,
+        series_colors=["#1b5e35", "#78be43"],
+        y_divisor=1000,
+    )
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["output_path"].endswith(".pdf")
+    assert result["export_format"] == "pdf"
+
+
 def test_generate_table_png_creates_file(tmp_path) -> None:
     """Table PNG output file should exist after a successful call."""
     from avo_utils.tables import build_cover_type_summary_rows, generate_table_png
@@ -221,6 +247,30 @@ def test_generate_table_png_creates_file(tmp_path) -> None:
     import os
 
     assert os.path.isfile(output)
+
+
+def test_generate_table_pdf_creates_file(tmp_path) -> None:
+    """Generic table export should support PDF via output suffix."""
+    from avo_utils.tables import build_cover_type_summary_rows, generate_table_png
+
+    output = str(tmp_path / "test_table.pdf")
+    rows = load_mock_cover_type_rows()
+    summary_rows, _ = build_cover_type_summary_rows(rows)
+    result = generate_table_png(
+        rows=rows,
+        output_path=output,
+        columns=TABLE_COLUMNS,
+        numeric_columns=TABLE_NUMERIC_COLUMNS,
+        summary_rows=summary_rows,
+        column_widths=TABLE_WIDTHS,
+        title="Cover Type Table",
+    )
+
+    import os
+
+    assert os.path.isfile(output)
+    assert result["output_path"].endswith(".pdf")
+    assert result["export_format"] == "pdf"
 
 
 def test_generate_table_png_includes_summary_totals(tmp_path) -> None:
@@ -575,10 +625,16 @@ def test_generate_percent_acres_table_png_creates_file(tmp_path) -> None:
 
 def test_generate_percent_acres_table_png_to_output_dir() -> None:
     """Generate percent acres table PNG to the real output directory."""
-    from avo_utils.io import DEFAULT_CHART_OUTPUT_DIR
+    from avo_utils.io import DEFAULT_TABLE_OUTPUT_DIR, build_visual_output_path
     from avo_utils.tables import build_grand_total_row, build_percent_acres_rows, generate_table_png
 
-    output = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "mock_percent_acres_table.png")
+    output = build_visual_output_path(
+        "percent_acres",
+        "productive_acres_with_avo_opportunities",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
     raw_rows = load_mock_percent_acres_rows()
     rows = build_percent_acres_rows(raw_rows)
 
@@ -598,8 +654,10 @@ def test_generate_percent_acres_table_png_to_output_dir() -> None:
 
     result = generate_table_png(
         rows=rows,
-        output_path=output,
+        output_path=str(output),
         columns=PERCENT_ACRES_TABLE_COLUMNS,
+        analysis_component="percent_acres",
+        visual_name="productive_acres_with_avo_opportunities",
         numeric_columns=PERCENT_ACRES_NUMERIC_COLUMNS,
         summary_rows=grand_total_rows,
         column_widths=PERCENT_ACRES_TABLE_WIDTHS,
@@ -678,12 +736,18 @@ def test_generate_large_landowner_pie_chart_png_creates_file(tmp_path) -> None:
 
 def test_generate_large_landowner_pie_chart_png_to_output_dir() -> None:
     """Generate large landowner pie chart PNG to the real output directory."""
-    from avo_utils.io import DEFAULT_PIE_CHART_OUTPUT_DIR
+    from avo_utils.io import DEFAULT_PIE_CHART_OUTPUT_DIR, build_visual_output_path
     from avo_utils.pies import generate_large_landowner_pie_chart_png
 
-    output = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "mock_large_landowners_pie_chart.png")
+    output = build_visual_output_path(
+        "large_landowners",
+        "largest_landowners",
+        "graph",
+        output_dir=DEFAULT_PIE_CHART_OUTPUT_DIR,
+        suffix=".png",
+    )
     rows = load_mock_large_landowner_rows()
-    result = generate_large_landowner_pie_chart_png(rows=rows, output_path=output)
+    result = generate_large_landowner_pie_chart_png(rows=rows, output_path=str(output))
 
     import os
 
@@ -725,12 +789,18 @@ def test_generate_top_customer_pie_chart_png_creates_file(tmp_path) -> None:
 
 def test_generate_top_destination_pie_chart_png_to_output_dir() -> None:
     """Generate top destination pie chart PNG to the real output directory."""
-    from avo_utils.io import DEFAULT_PIE_CHART_OUTPUT_DIR
+    from avo_utils.io import DEFAULT_PIE_CHART_OUTPUT_DIR, build_visual_output_path
     from avo_utils.pies import generate_top_destination_pie_chart_png
 
-    output = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "mock_top_destination_pie_chart.png")
+    output = build_visual_output_path(
+        "top_destination",
+        "top_destination",
+        "graph",
+        output_dir=DEFAULT_PIE_CHART_OUTPUT_DIR,
+        suffix=".png",
+    )
     rows = load_mock_top_destination_rows()
-    result = generate_top_destination_pie_chart_png(rows=rows, output_path=output)
+    result = generate_top_destination_pie_chart_png(rows=rows, output_path=str(output))
 
     import os
 
@@ -740,12 +810,18 @@ def test_generate_top_destination_pie_chart_png_to_output_dir() -> None:
 
 def test_generate_top_customer_pie_chart_png_to_output_dir() -> None:
     """Generate top customer pie chart PNG to the real output directory."""
-    from avo_utils.io import DEFAULT_PIE_CHART_OUTPUT_DIR
+    from avo_utils.io import DEFAULT_PIE_CHART_OUTPUT_DIR, build_visual_output_path
     from avo_utils.pies import generate_top_customer_pie_chart_png
 
-    output = str(DEFAULT_PIE_CHART_OUTPUT_DIR / "mock_top_customer_pie_chart.png")
+    output = build_visual_output_path(
+        "top_customer",
+        "top_customer",
+        "graph",
+        output_dir=DEFAULT_PIE_CHART_OUTPUT_DIR,
+        suffix=".png",
+    )
     rows = load_mock_top_customer_rows()
-    result = generate_top_customer_pie_chart_png(rows=rows, output_path=output)
+    result = generate_top_customer_pie_chart_png(rows=rows, output_path=str(output))
 
     import os
 
@@ -786,11 +862,17 @@ def test_generate_large_landowner_bar_chart_png_creates_file(tmp_path) -> None:
 def test_generate_large_landowner_bar_chart_png_to_output_dir() -> None:
     """Generate large landowner grouped bar PNG to the real output directory."""
     from avo_utils.bars import generate_large_landowner_bar_chart_png
-    from avo_utils.io import DEFAULT_BAR_CHART_OUTPUT_DIR
+    from avo_utils.io import DEFAULT_BAR_CHART_OUTPUT_DIR, build_visual_output_path
 
-    output = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "mock_large_landowners_bar_chart.png")
+    output = build_visual_output_path(
+        "large_landowners",
+        "largest_landowners",
+        "graph",
+        output_dir=DEFAULT_BAR_CHART_OUTPUT_DIR,
+        suffix=".png",
+    )
     rows = load_mock_large_landowner_rows()
-    result = generate_large_landowner_bar_chart_png(rows=rows, output_path=output)
+    result = generate_large_landowner_bar_chart_png(rows=rows, output_path=str(output))
 
     import os
 
@@ -830,12 +912,18 @@ def test_generate_large_landowner_table_png_creates_file(tmp_path) -> None:
 
 def test_generate_large_landowner_table_png_to_output_dir() -> None:
     """Generate large landowner table PNG to the real output directory."""
-    from avo_utils.io import DEFAULT_CHART_OUTPUT_DIR
+    from avo_utils.io import DEFAULT_TABLE_OUTPUT_DIR, build_visual_output_path
     from avo_utils.tables import generate_large_landowner_table_png
 
-    output = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "mock_large_landowners_table.png")
+    output = build_visual_output_path(
+        "large_landowners",
+        "largest_landowners",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
     rows = load_mock_large_landowner_rows()
-    result = generate_large_landowner_table_png(rows=rows, output_path=output)
+    result = generate_large_landowner_table_png(rows=rows, output_path=str(output))
 
     import os
 
@@ -1059,15 +1147,31 @@ def test_generate_delivery_by_area_table_png_creates_file(tmp_path) -> None:
 def test_generate_delivery_by_area_outputs_to_output_dir() -> None:
     """Generate delivery-by-area chart and table PNGs to real output directories."""
     from avo_utils.bars import generate_delivery_by_area_bar_chart_png
-    from avo_utils.io import DEFAULT_BAR_CHART_OUTPUT_DIR, DEFAULT_CHART_OUTPUT_DIR
+    from avo_utils.io import (
+        DEFAULT_BAR_CHART_OUTPUT_DIR,
+        DEFAULT_TABLE_OUTPUT_DIR,
+        build_visual_output_path,
+    )
     from avo_utils.tables import generate_delivery_by_area_table_png
 
     rows = load_mock_delivery_by_area_rows()
-    bar_output = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "mock_delivery_by_area_bar_chart.png")
-    table_output = str(DEFAULT_CHART_OUTPUT_DIR / "tables" / "mock_delivery_by_area_table.png")
+    bar_output = build_visual_output_path(
+        "delivery_by_area",
+        "delivery_by_area",
+        "graph",
+        output_dir=DEFAULT_BAR_CHART_OUTPUT_DIR,
+        suffix=".png",
+    )
+    table_output = build_visual_output_path(
+        "delivery_by_area",
+        "delivery_by_area",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
 
-    bar_result = generate_delivery_by_area_bar_chart_png(rows=rows, output_path=bar_output)
-    table_result = generate_delivery_by_area_table_png(rows=rows, output_path=table_output)
+    bar_result = generate_delivery_by_area_bar_chart_png(rows=rows, output_path=str(bar_output))
+    table_result = generate_delivery_by_area_table_png(rows=rows, output_path=str(table_output))
 
     import os
 
@@ -1075,3 +1179,877 @@ def test_generate_delivery_by_area_outputs_to_output_dir() -> None:
     assert os.path.isfile(table_output)
     assert bar_result["category_count"] == 10
     assert table_result["data_row_count"] == 3
+
+
+def test_generate_all_mock_outputs_to_output_dir_with_convention_names() -> None:
+    """Generate the full manual-inspection output set using convention-based filenames."""
+    from avo_utils.bars import (
+        generate_bar_chart_png,
+        generate_mill_consumption_change_bar_chart_png,
+    )
+    from avo_utils.io import (
+        DEFAULT_BAR_CHART_OUTPUT_DIR,
+        DEFAULT_PIE_CHART_OUTPUT_DIR,
+        DEFAULT_TABLE_OUTPUT_DIR,
+        build_visual_output_path,
+    )
+    from avo_utils.pies import generate_pie_chart_png
+    from avo_utils.tables import (
+        build_cover_type_summary_rows,
+        build_grand_total_row,
+        build_percent_acres_rows,
+        generate_mill_consumption_change_table_png,
+        generate_portfolio_attributes_table_png,
+        generate_table_png,
+    )
+
+    generated_paths: list[Path] = []
+
+    cover_rows = load_mock_cover_type_rows()
+    cover_type_pie_output = build_visual_output_path(
+        "cover_type",
+        "acres_volume_by_broad_cover_type",
+        "graph",
+        output_dir=DEFAULT_PIE_CHART_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_pie_chart_png(
+        cover_rows,
+        label_column="broad_cover_type",
+        value_column="total_stand_acres",
+        output_path=str(cover_type_pie_output),
+        title="Acres & Volume by Broad Cover Type",
+    )
+    generated_paths.append(cover_type_pie_output)
+
+    cover_type_table_output = build_visual_output_path(
+        "cover_type",
+        "cover_type_summary",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    cover_summary_rows, _ = build_cover_type_summary_rows(cover_rows)
+    generate_table_png(
+        rows=cover_rows,
+        output_path=str(cover_type_table_output),
+        columns=TABLE_COLUMNS,
+        analysis_component="cover_type",
+        visual_name="cover_type_summary",
+        numeric_columns=TABLE_NUMERIC_COLUMNS,
+        summary_rows=cover_summary_rows,
+        column_widths=TABLE_WIDTHS,
+        title="Cover Type Table",
+    )
+    generated_paths.append(cover_type_table_output)
+
+    ownership_rows = load_mock_ownership_type_rows()
+    ownership_pie_output = build_visual_output_path(
+        "ownership_type",
+        "acres_volume_by_ownership_type",
+        "graph",
+        output_dir=DEFAULT_PIE_CHART_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_pie_chart_png(
+        ownership_rows,
+        label_column="ownership_type",
+        value_column="total_stand_acres",
+        output_path=str(ownership_pie_output),
+        title="Acres & Volume by Ownership Type",
+    )
+    generated_paths.append(ownership_pie_output)
+
+    ownership_table_output = build_visual_output_path(
+        "ownership_type",
+        "ownership_type_summary",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    ownership_summary_rows, _ = build_grand_total_row(
+        ownership_rows,
+        sum_columns=["total_stand_acres", "net_productive_acres", "harvestable_acres"],
+        label_column="business",
+        label="Total",
+    )
+    generate_table_png(
+        rows=ownership_rows,
+        output_path=str(ownership_table_output),
+        columns=OWNERSHIP_TABLE_COLUMNS,
+        analysis_component="ownership_type",
+        visual_name="ownership_type_summary",
+        numeric_columns=TABLE_NUMERIC_COLUMNS,
+        summary_rows=ownership_summary_rows,
+        column_widths=OWNERSHIP_TABLE_WIDTHS,
+        title="Ownership Type Table",
+    )
+    generated_paths.append(ownership_table_output)
+
+    county_rows = load_mock_county_summary_rows()
+    county_table_output = build_visual_output_path(
+        "county_summary",
+        "county_summary",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    county_summary_rows, _ = build_grand_total_row(
+        county_rows,
+        sum_columns=["acres_within_woodbasket", "wy_ownership_acres"],
+        label_column="woodbasket",
+        label="Total",
+    )
+    generate_table_png(
+        rows=county_rows,
+        output_path=str(county_table_output),
+        columns=COUNTY_SUMMARY_TABLE_COLUMNS,
+        analysis_component="county_summary",
+        visual_name="county_summary",
+        numeric_columns=COUNTY_SUMMARY_NUMERIC_COLUMNS,
+        summary_rows=county_summary_rows,
+        column_widths=COUNTY_SUMMARY_TABLE_WIDTHS,
+        title="County Summary Table",
+    )
+    generated_paths.append(county_table_output)
+
+    pine_age_rows = load_mock_pine_age_class_rows()
+    pine_age_bar_output = build_visual_output_path(
+        "pine_acres_by_age_class",
+        "private_pine_acres_by_age_class",
+        "graph",
+        output_dir=DEFAULT_BAR_CHART_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_bar_chart_png(
+        rows=pine_age_rows,
+        category_column="age_class",
+        series_columns=["wy", "other_private"],
+        output_path=str(pine_age_bar_output),
+        title="Private Pine Acres by Age Class",
+        y_label="Thousands",
+        analysis_component="pine_acres_by_age_class",
+        visual_name="private_pine_acres_by_age_class",
+        series_labels={"wy": "WY", "other_private": "Other Private"},
+        stacked=True,
+        series_colors=["#1b5e35", "#78be43"],
+        y_divisor=1000,
+    )
+    generated_paths.append(pine_age_bar_output)
+
+    pine_age_table_output = build_visual_output_path(
+        "pine_acres_by_age_class",
+        "private_pine_acres_by_age_class",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_table_png(
+        rows=_enrich_pine_rows(pine_age_rows),
+        output_path=str(pine_age_table_output),
+        columns=PINE_AGE_CLASS_TABLE_COLUMNS,
+        analysis_component="pine_acres_by_age_class",
+        visual_name="private_pine_acres_by_age_class",
+        numeric_columns=PINE_AGE_CLASS_NUMERIC_COLUMNS,
+        percent_columns=PINE_AGE_CLASS_PERCENT_COLUMNS,
+        column_widths=PINE_AGE_CLASS_TABLE_WIDTHS,
+        title="Private Pine Acres by Age Class",
+    )
+    generated_paths.append(pine_age_table_output)
+
+    pine_volume_rows = load_mock_pine_volume_rows()
+    pine_volume_bar_output = build_visual_output_path(
+        "pine_volume_by_age_class",
+        "private_pine_volume_by_age_class",
+        "graph",
+        output_dir=DEFAULT_BAR_CHART_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_bar_chart_png(
+        rows=pine_volume_rows,
+        category_column="age_class",
+        series_columns=["wy", "other_private"],
+        output_path=str(pine_volume_bar_output),
+        title="Private Pine Volume by Age Class",
+        y_label="Thousands",
+        analysis_component="pine_volume_by_age_class",
+        visual_name="private_pine_volume_by_age_class",
+        series_labels={"wy": "WY", "other_private": "Other Private"},
+        stacked=True,
+        series_colors=["#1b5e35", "#78be43"],
+        y_divisor=1000,
+    )
+    generated_paths.append(pine_volume_bar_output)
+
+    pine_volume_table_output = build_visual_output_path(
+        "pine_volume_by_age_class",
+        "private_pine_volume_by_age_class",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_table_png(
+        rows=_enrich_pine_rows(pine_volume_rows),
+        output_path=str(pine_volume_table_output),
+        columns=PINE_VOLUME_TABLE_COLUMNS,
+        analysis_component="pine_volume_by_age_class",
+        visual_name="private_pine_volume_by_age_class",
+        numeric_columns=PINE_VOLUME_NUMERIC_COLUMNS,
+        percent_columns=PINE_VOLUME_PERCENT_COLUMNS,
+        column_widths=PINE_VOLUME_TABLE_WIDTHS,
+        title="Private Pine Volume by Age Class",
+    )
+    generated_paths.append(pine_volume_table_output)
+
+    portfolio_output = build_visual_output_path(
+        "portfolio_attributes",
+        "sample_woodbasket_name",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_portfolio_attributes_table_png(
+        data=load_mock_portfolio_attributes(),
+        output_path=str(portfolio_output),
+    )
+    generated_paths.append(portfolio_output)
+
+    mill_rows = load_mock_mill_consumption_change_rows()
+    mill_recent_output = build_visual_output_path(
+        "mill_consumption_change",
+        "all_products_recent_changes",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="prev",
+        to_column="curr",
+        from_label="2023",
+        to_label="2024",
+        output_path=str(mill_recent_output),
+        title="All Products - Recent Changes",
+        total_label="Total Change",
+    )
+    generated_paths.append(mill_recent_output)
+
+    mill_future_output = build_visual_output_path(
+        "mill_consumption_change",
+        "all_products_future_changes",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="curr",
+        to_column="future",
+        from_label="2024",
+        to_label="2029",
+        include_prev_column=True,
+        prev_column="prev",
+        prev_label="2023",
+        output_path=str(mill_future_output),
+        title="All Products - Future Changes",
+        total_label="Total Change",
+    )
+    generated_paths.append(mill_future_output)
+
+    df_recent_output = build_visual_output_path(
+        "mill_consumption_change",
+        "douglas_fir_recent_changes",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="prev",
+        to_column="curr",
+        product_name="Douglas Fir",
+        output_path=str(df_recent_output),
+        title="Recent Changes",
+        total_label="Total Change DF",
+    )
+    generated_paths.append(df_recent_output)
+
+    df_future_output = build_visual_output_path(
+        "mill_consumption_change",
+        "douglas_fir_future_changes",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="curr",
+        to_column="future",
+        product_name="Douglas Fir",
+        output_path=str(df_future_output),
+        title="Future Changes",
+        total_label="Total Change DF",
+    )
+    generated_paths.append(df_future_output)
+
+    ww_recent_output = build_visual_output_path(
+        "mill_consumption_change",
+        "whitewood_recent_changes",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="prev",
+        to_column="curr",
+        product_name="Whitewood",
+        output_path=str(ww_recent_output),
+        title="Recent Changes",
+        total_label="Total Change WW",
+    )
+    generated_paths.append(ww_recent_output)
+
+    ww_future_output = build_visual_output_path(
+        "mill_consumption_change",
+        "whitewood_future_changes",
+        "table",
+        output_dir=DEFAULT_TABLE_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="curr",
+        to_column="future",
+        product_name="Whitewood",
+        output_path=str(ww_future_output),
+        title="Future Changes",
+        total_label="Total Change WW",
+    )
+    generated_paths.append(ww_future_output)
+
+    mill_bar_output = build_visual_output_path(
+        "mill_consumption_change",
+        "mill_consumption_change",
+        "graph",
+        output_dir=DEFAULT_BAR_CHART_OUTPUT_DIR,
+        suffix=".png",
+    )
+    generate_mill_consumption_change_bar_chart_png(
+        rows=mill_rows,
+        output_path=str(mill_bar_output),
+    )
+    generated_paths.append(mill_bar_output)
+
+    for output in generated_paths:
+        assert output.is_file(), f"expected generated output file: {output}"
+
+
+def test_generate_all_mock_pdf_outputs_to_output_dir_with_convention_names() -> None:
+    """Generate the full manual-inspection PDF set under output/pdf using convention names."""
+    from avo_utils.bars import (
+        generate_bar_chart_png,
+        generate_mill_consumption_change_bar_chart_png,
+    )
+    from avo_utils.io import (
+        DEFAULT_PDF_BAR_OUTPUT_DIR,
+        DEFAULT_PDF_PIE_OUTPUT_DIR,
+        DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        build_visual_output_path,
+    )
+    from avo_utils.pies import generate_pie_chart_png
+    from avo_utils.tables import (
+        build_cover_type_summary_rows,
+        build_grand_total_row,
+        build_percent_acres_rows,
+        generate_mill_consumption_change_table_png,
+        generate_portfolio_attributes_table_png,
+        generate_table_png,
+    )
+
+    generated_paths: list[Path] = []
+
+    cover_rows = load_mock_cover_type_rows()
+    cover_type_pie_output = build_visual_output_path(
+        "cover_type",
+        "acres_volume_by_broad_cover_type",
+        "graph",
+        output_dir=DEFAULT_PDF_PIE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_pie_chart_png(
+        cover_rows,
+        label_column="broad_cover_type",
+        value_column="total_stand_acres",
+        output_path=str(cover_type_pie_output),
+        title="Acres & Volume by Broad Cover Type",
+    )
+    generated_paths.append(cover_type_pie_output)
+
+    cover_type_table_output = build_visual_output_path(
+        "cover_type",
+        "cover_type_summary",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    cover_summary_rows, _ = build_cover_type_summary_rows(cover_rows)
+    generate_table_png(
+        rows=cover_rows,
+        output_path=str(cover_type_table_output),
+        columns=TABLE_COLUMNS,
+        analysis_component="cover_type",
+        visual_name="cover_type_summary",
+        numeric_columns=TABLE_NUMERIC_COLUMNS,
+        summary_rows=cover_summary_rows,
+        column_widths=TABLE_WIDTHS,
+        title="Cover Type Table",
+    )
+    generated_paths.append(cover_type_table_output)
+
+    ownership_rows = load_mock_ownership_type_rows()
+    ownership_pie_output = build_visual_output_path(
+        "ownership_type",
+        "acres_volume_by_ownership_type",
+        "graph",
+        output_dir=DEFAULT_PDF_PIE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_pie_chart_png(
+        ownership_rows,
+        label_column="ownership_type",
+        value_column="total_stand_acres",
+        output_path=str(ownership_pie_output),
+        title="Acres & Volume by Ownership Type",
+    )
+    generated_paths.append(ownership_pie_output)
+
+    ownership_table_output = build_visual_output_path(
+        "ownership_type",
+        "ownership_type_summary",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    ownership_summary_rows, _ = build_grand_total_row(
+        ownership_rows,
+        sum_columns=["total_stand_acres", "net_productive_acres", "harvestable_acres"],
+        label_column="business",
+        label="Total",
+    )
+    generate_table_png(
+        rows=ownership_rows,
+        output_path=str(ownership_table_output),
+        columns=OWNERSHIP_TABLE_COLUMNS,
+        analysis_component="ownership_type",
+        visual_name="ownership_type_summary",
+        numeric_columns=TABLE_NUMERIC_COLUMNS,
+        summary_rows=ownership_summary_rows,
+        column_widths=OWNERSHIP_TABLE_WIDTHS,
+        title="Ownership Type Table",
+    )
+    generated_paths.append(ownership_table_output)
+
+    county_rows = load_mock_county_summary_rows()
+    county_table_output = build_visual_output_path(
+        "county_summary",
+        "county_summary",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    county_summary_rows, _ = build_grand_total_row(
+        county_rows,
+        sum_columns=["acres_within_woodbasket", "wy_ownership_acres"],
+        label_column="woodbasket",
+        label="Total",
+    )
+    generate_table_png(
+        rows=county_rows,
+        output_path=str(county_table_output),
+        columns=COUNTY_SUMMARY_TABLE_COLUMNS,
+        analysis_component="county_summary",
+        visual_name="county_summary",
+        numeric_columns=COUNTY_SUMMARY_NUMERIC_COLUMNS,
+        summary_rows=county_summary_rows,
+        column_widths=COUNTY_SUMMARY_TABLE_WIDTHS,
+        title="County Summary Table",
+    )
+    generated_paths.append(county_table_output)
+
+    pine_age_rows = load_mock_pine_age_class_rows()
+    pine_age_bar_output = build_visual_output_path(
+        "pine_acres_by_age_class",
+        "private_pine_acres_by_age_class",
+        "graph",
+        output_dir=DEFAULT_PDF_BAR_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_bar_chart_png(
+        rows=pine_age_rows,
+        category_column="age_class",
+        series_columns=["wy", "other_private"],
+        output_path=str(pine_age_bar_output),
+        title="Private Pine Acres by Age Class",
+        y_label="Thousands",
+        analysis_component="pine_acres_by_age_class",
+        visual_name="private_pine_acres_by_age_class",
+        series_labels={"wy": "WY", "other_private": "Other Private"},
+        stacked=True,
+        series_colors=["#1b5e35", "#78be43"],
+        y_divisor=1000,
+    )
+    generated_paths.append(pine_age_bar_output)
+
+    pine_age_table_output = build_visual_output_path(
+        "pine_acres_by_age_class",
+        "private_pine_acres_by_age_class",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_table_png(
+        rows=_enrich_pine_rows(pine_age_rows),
+        output_path=str(pine_age_table_output),
+        columns=PINE_AGE_CLASS_TABLE_COLUMNS,
+        analysis_component="pine_acres_by_age_class",
+        visual_name="private_pine_acres_by_age_class",
+        numeric_columns=PINE_AGE_CLASS_NUMERIC_COLUMNS,
+        percent_columns=PINE_AGE_CLASS_PERCENT_COLUMNS,
+        column_widths=PINE_AGE_CLASS_TABLE_WIDTHS,
+        title="Private Pine Acres by Age Class",
+    )
+    generated_paths.append(pine_age_table_output)
+
+    pine_volume_rows = load_mock_pine_volume_rows()
+    pine_volume_bar_output = build_visual_output_path(
+        "pine_volume_by_age_class",
+        "private_pine_volume_by_age_class",
+        "graph",
+        output_dir=DEFAULT_PDF_BAR_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_bar_chart_png(
+        rows=pine_volume_rows,
+        category_column="age_class",
+        series_columns=["wy", "other_private"],
+        output_path=str(pine_volume_bar_output),
+        title="Private Pine Volume by Age Class",
+        y_label="Thousands",
+        analysis_component="pine_volume_by_age_class",
+        visual_name="private_pine_volume_by_age_class",
+        series_labels={"wy": "WY", "other_private": "Other Private"},
+        stacked=True,
+        series_colors=["#1b5e35", "#78be43"],
+        y_divisor=1000,
+    )
+    generated_paths.append(pine_volume_bar_output)
+
+    pine_volume_table_output = build_visual_output_path(
+        "pine_volume_by_age_class",
+        "private_pine_volume_by_age_class",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_table_png(
+        rows=_enrich_pine_rows(pine_volume_rows),
+        output_path=str(pine_volume_table_output),
+        columns=PINE_VOLUME_TABLE_COLUMNS,
+        analysis_component="pine_volume_by_age_class",
+        visual_name="private_pine_volume_by_age_class",
+        numeric_columns=PINE_VOLUME_NUMERIC_COLUMNS,
+        percent_columns=PINE_VOLUME_PERCENT_COLUMNS,
+        column_widths=PINE_VOLUME_TABLE_WIDTHS,
+        title="Private Pine Volume by Age Class",
+    )
+    generated_paths.append(pine_volume_table_output)
+
+    percent_rows = build_percent_acres_rows(load_mock_percent_acres_rows())
+    percent_acres_output = build_visual_output_path(
+        "percent_acres",
+        "productive_acres_with_avo_opportunities",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    percent_summary_rows, _ = build_grand_total_row(
+        percent_rows,
+        sum_columns=["total"],
+        label_column="region",
+        label="Grand Total",
+    )
+    percent_summary_rows[0].update({
+        "count_1": "30%",
+        "count_2": "13%",
+        "count_3": "4%",
+        "count_4": "1%",
+        "count_5plus": "0%",
+    })
+    generate_table_png(
+        rows=percent_rows,
+        output_path=str(percent_acres_output),
+        columns=PERCENT_ACRES_TABLE_COLUMNS,
+        analysis_component="percent_acres",
+        visual_name="productive_acres_with_avo_opportunities",
+        numeric_columns=PERCENT_ACRES_NUMERIC_COLUMNS,
+        summary_rows=percent_summary_rows,
+        column_widths=PERCENT_ACRES_TABLE_WIDTHS,
+        title="% of Total Productive Acres with AVO Opportunities Defined",
+    )
+    generated_paths.append(percent_acres_output)
+
+    portfolio_output = build_visual_output_path(
+        "portfolio_attributes",
+        "sample_woodbasket_name",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_portfolio_attributes_table_png(
+        data=load_mock_portfolio_attributes(),
+        output_path=str(portfolio_output),
+    )
+    generated_paths.append(portfolio_output)
+
+    mill_rows = load_mock_mill_consumption_change_rows()
+    mill_recent_output = build_visual_output_path(
+        "mill_consumption_change",
+        "all_products_recent_changes",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="prev",
+        to_column="curr",
+        from_label="2023",
+        to_label="2024",
+        output_path=str(mill_recent_output),
+        title="All Products - Recent Changes",
+        total_label="Total Change",
+    )
+    generated_paths.append(mill_recent_output)
+
+    mill_future_output = build_visual_output_path(
+        "mill_consumption_change",
+        "all_products_future_changes",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="curr",
+        to_column="future",
+        from_label="2024",
+        to_label="2029",
+        include_prev_column=True,
+        prev_column="prev",
+        prev_label="2023",
+        output_path=str(mill_future_output),
+        title="All Products - Future Changes",
+        total_label="Total Change",
+    )
+    generated_paths.append(mill_future_output)
+
+    df_recent_output = build_visual_output_path(
+        "mill_consumption_change",
+        "douglas_fir_recent_changes",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="prev",
+        to_column="curr",
+        product_name="Douglas Fir",
+        output_path=str(df_recent_output),
+        title="Recent Changes",
+        total_label="Total Change DF",
+    )
+    generated_paths.append(df_recent_output)
+
+    df_future_output = build_visual_output_path(
+        "mill_consumption_change",
+        "douglas_fir_future_changes",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="curr",
+        to_column="future",
+        product_name="Douglas Fir",
+        output_path=str(df_future_output),
+        title="Future Changes",
+        total_label="Total Change DF",
+    )
+    generated_paths.append(df_future_output)
+
+    ww_recent_output = build_visual_output_path(
+        "mill_consumption_change",
+        "whitewood_recent_changes",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="prev",
+        to_column="curr",
+        product_name="Whitewood",
+        output_path=str(ww_recent_output),
+        title="Recent Changes",
+        total_label="Total Change WW",
+    )
+    generated_paths.append(ww_recent_output)
+
+    ww_future_output = build_visual_output_path(
+        "mill_consumption_change",
+        "whitewood_future_changes",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_mill_consumption_change_table_png(
+        mill_rows,
+        from_column="curr",
+        to_column="future",
+        product_name="Whitewood",
+        output_path=str(ww_future_output),
+        title="Future Changes",
+        total_label="Total Change WW",
+    )
+    generated_paths.append(ww_future_output)
+
+    delivery_rows = load_mock_delivery_by_area_rows()
+    delivery_bar_output = build_visual_output_path(
+        "delivery_by_area",
+        "delivery_by_area",
+        "graph",
+        output_dir=DEFAULT_PDF_BAR_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_bar_chart_png(
+        rows=delivery_rows,
+        category_column="area",
+        series_columns=["export", "domestic_internal", "domestic_third_party"],
+        output_path=str(delivery_bar_output),
+        title="Deliveries by Area",
+        analysis_component="delivery_by_area",
+        visual_name="delivery_by_area",
+        y_label="MMBF",
+        series_labels={
+            "export": "Export",
+            "domestic_internal": "Domestic Internal",
+            "domestic_third_party": "Domestic 3rd Party",
+        },
+        stacked=True,
+        series_colors=["#0c7c59", "#3a7ca5", "#f4a259"],
+        show_value_labels=True,
+    )
+    generated_paths.append(delivery_bar_output)
+
+    delivery_table_output = build_visual_output_path(
+        "delivery_by_area",
+        "delivery_by_area",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    from avo_utils.tables import generate_delivery_by_area_table_png
+    generate_delivery_by_area_table_png(
+        rows=delivery_rows,
+        output_path=str(delivery_table_output),
+        title="Deliveries by Area",
+    )
+    generated_paths.append(delivery_table_output)
+
+    large_landowner_pie_output = build_visual_output_path(
+        "large_landowners",
+        "largest_landowners",
+        "graph",
+        output_dir=DEFAULT_PDF_PIE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    from avo_utils.pies import generate_large_landowner_pie_chart_png, generate_top_customer_pie_chart_png, generate_top_destination_pie_chart_png
+    large_landowner_rows = load_mock_large_landowner_rows()
+    generate_large_landowner_pie_chart_png(
+        rows=large_landowner_rows,
+        output_path=str(large_landowner_pie_output),
+    )
+    generated_paths.append(large_landowner_pie_output)
+
+    large_landowner_bar_output = build_visual_output_path(
+        "large_landowners",
+        "largest_landowners",
+        "graph",
+        output_dir=DEFAULT_PDF_BAR_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    from avo_utils.bars import generate_large_landowner_bar_chart_png
+    generate_large_landowner_bar_chart_png(
+        rows=large_landowner_rows,
+        output_path=str(large_landowner_bar_output),
+    )
+    generated_paths.append(large_landowner_bar_output)
+
+    large_landowner_table_output = build_visual_output_path(
+        "large_landowners",
+        "largest_landowners",
+        "table",
+        output_dir=DEFAULT_PDF_TABLE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    from avo_utils.tables import generate_large_landowner_table_png
+    generate_large_landowner_table_png(
+        rows=large_landowner_rows,
+        output_path=str(large_landowner_table_output),
+    )
+    generated_paths.append(large_landowner_table_output)
+
+    top_destination_output = build_visual_output_path(
+        "top_destination",
+        "top_destination",
+        "graph",
+        output_dir=DEFAULT_PDF_PIE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_top_destination_pie_chart_png(
+        rows=load_mock_top_destination_rows(),
+        output_path=str(top_destination_output),
+    )
+    generated_paths.append(top_destination_output)
+
+    top_customer_output = build_visual_output_path(
+        "top_customer",
+        "top_customer",
+        "graph",
+        output_dir=DEFAULT_PDF_PIE_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_top_customer_pie_chart_png(
+        rows=load_mock_top_customer_rows(),
+        output_path=str(top_customer_output),
+    )
+    generated_paths.append(top_customer_output)
+
+    mill_bar_output = build_visual_output_path(
+        "mill_consumption_change",
+        "mill_consumption_change",
+        "graph",
+        output_dir=DEFAULT_PDF_BAR_OUTPUT_DIR,
+        suffix=".pdf",
+    )
+    generate_mill_consumption_change_bar_chart_png(
+        rows=mill_rows,
+        output_path=str(mill_bar_output),
+    )
+    generated_paths.append(mill_bar_output)
+
+    for output in generated_paths:
+        assert output.is_file(), f"expected generated output file: {output}"

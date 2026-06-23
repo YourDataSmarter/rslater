@@ -1,9 +1,12 @@
 """CSV export utilities for AVO."""
 
 import csv
+from datetime import date
+from datetime import datetime
 import json
 from typing import Any
 
+from .io import build_data_export_output_path
 from .io import DEFAULT_CSV_OUTPUT_DIR
 from .io import ensure_output_directory
 from .io import normalize_output_path
@@ -70,9 +73,13 @@ def _normalize_row_keys_and_values(rows: list[dict[str, Any]]) -> list[dict[str,
 
 def export_csv(
     data: Any,
-    output_path: str = str(DEFAULT_CSV_OUTPUT_DIR / "export.csv"),
+    output_path: str | None = None,
     *,
     fieldnames: list[str] | None = None,
+    component_name: str | None = None,
+    visual_name: str | None = None,
+    exported_by: str | None = None,
+    export_date: date | datetime | str | None = None,
 ) -> dict[str, Any]:
     """Export tabular data to a CSV file.
 
@@ -80,9 +87,17 @@ def export_csv(
         dict with ``rows`` or ``sections``, plain dict, or scalar/list values).
     :type data: Any
     :param output_path: Destination path for the CSV file.
-    :type output_path: str
+    :type output_path: str | None
     :param fieldnames: Optional explicit CSV column ordering.
     :type fieldnames: list[str] | None
+    :param component_name: Optional analysis component name for convention-based file naming.
+    :type component_name: str | None
+    :param visual_name: Optional visual name for convention-based file naming.
+    :type visual_name: str | None
+    :param exported_by: Optional user name for convention-based file naming.
+    :type exported_by: str | None
+    :param export_date: Optional date token for convention-based file naming.
+    :type export_date: date | datetime | str | None
     :returns: Metadata about the generated CSV.
     :rtype: dict[str, Any]
     :raises ValueError: If inputs are invalid.
@@ -91,7 +106,23 @@ def export_csv(
     if not rows:
         raise ValueError("data must contain at least one row")
 
-    resolved_output = normalize_output_path(output_path, suffix=".csv")
+    if output_path is None:
+        if component_name and visual_name and exported_by:
+            resolved_output = build_data_export_output_path(
+                component_name,
+                visual_name,
+                exported_by,
+                export_date=export_date,
+                output_dir=DEFAULT_CSV_OUTPUT_DIR,
+                suffix=".csv",
+            )
+        else:
+            resolved_output = normalize_output_path(
+                str(DEFAULT_CSV_OUTPUT_DIR / "export.csv"),
+                suffix=".csv",
+            )
+    else:
+        resolved_output = normalize_output_path(output_path, suffix=".csv")
     ensure_output_directory(str(resolved_output))
 
     if fieldnames is None:

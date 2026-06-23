@@ -30,7 +30,10 @@ from .configs import (
     PRIVATE_PALETTE,
     WEYERHAEUSER_COLOR,
 )
+from .io import build_visual_output_path
 from .io import DEFAULT_BAR_CHART_OUTPUT_DIR
+from .io import ensure_output_directory
+from .io import resolve_visual_output_path
 
 
 def _get_pyplot_module() -> Any:
@@ -58,15 +61,19 @@ def generate_bar_chart_png(
     rows: list[dict[str, Any]],
     category_column: str,
     series_columns: list[str],
-    output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "bar_chart.png"),
+    output_path: str | None = None,
     *,
     title: str | None = None,
+    analysis_component: str | None = None,
+    visual_name: str | None = None,
+    export_format: str = "png",
     y_label: str | None = None,
     series_labels: dict[str, str] | None = None,
     stacked: bool = False,
     series_colors: list[str] | None = None,
     y_divisor: float = 1.0,
     show_value_labels: bool = False,
+    x_tick_label_rotation: float = 0.0,
 ) -> dict[str, Any]:
     """Generate a grouped or stacked bar chart PNG from row data.
 
@@ -77,9 +84,15 @@ def generate_bar_chart_png(
     :param series_columns: Numeric columns to plot as bars.
     :type series_columns: list[str]
     :param output_path: Destination path for the PNG file.
-    :type output_path: str
+    :type output_path: str | None
     :param title: Optional chart title.
     :type title: str | None
+    :param analysis_component: Optional component token used for default filename generation.
+    :type analysis_component: str | None
+    :param visual_name: Optional visual-name token used for default filename generation.
+    :type visual_name: str | None
+    :param export_format: Visual export format, currently ``png`` or ``pdf``.
+    :type export_format: str
     :param y_label: Optional y-axis label.
     :type y_label: str | None
     :param series_labels: Optional display-name mapping for series keys.
@@ -92,6 +105,8 @@ def generate_bar_chart_png(
     :type y_divisor: float
     :param show_value_labels: Whether to annotate values on each bar segment.
     :type show_value_labels: bool
+    :param x_tick_label_rotation: Rotation angle in degrees for x-axis category labels.
+    :type x_tick_label_rotation: float
     :returns: Metadata about the generated image.
     :rtype: dict[str, Any]
     :raises ValueError: If inputs are invalid.
@@ -136,8 +151,16 @@ def generate_bar_chart_png(
                 )
             series_values[series_key].append(value)
 
-    output = Path(output_path).expanduser().resolve()
-    output.parent.mkdir(parents=True, exist_ok=True)
+    output, resolved_format = resolve_visual_output_path(
+        output_path,
+        default_output_dir=DEFAULT_BAR_CHART_OUTPUT_DIR,
+        default_filename_stem="bar_chart",
+        analysis_component=analysis_component,
+        visual_name=(visual_name or title) if analysis_component else None,
+        visual_kind="graph",
+        export_format=export_format,
+    )
+    ensure_output_directory(str(output))
 
     plt = _get_pyplot_module()
 
@@ -222,7 +245,8 @@ def generate_bar_chart_png(
                         )
 
         axis.set_xticks(x_positions)
-        axis.set_xticklabels(categories, rotation=0, ha="center")
+        tick_alignment = "right" if x_tick_label_rotation else "center"
+        axis.set_xticklabels(categories, rotation=x_tick_label_rotation, ha=tick_alignment)
         axis.legend(loc="upper right")
         axis.grid(axis="y", linestyle=BAR_GRID_LINESTYLE, alpha=BAR_GRID_ALPHA)
 
@@ -232,7 +256,7 @@ def generate_bar_chart_png(
             axis.set_ylabel(y_label)
 
         figure.tight_layout()
-        figure.savefig(output, format="png", bbox_inches="tight")
+        figure.savefig(output, format=resolved_format, bbox_inches="tight")
 
         width_px = int(figure.get_size_inches()[0] * figure.dpi)
         height_px = int(figure.get_size_inches()[1] * figure.dpi)
@@ -248,6 +272,8 @@ def generate_bar_chart_png(
             "width_px": width_px,
             "height_px": height_px,
             "title": title,
+            "export_format": resolved_format,
+            "x_tick_label_rotation": x_tick_label_rotation,
         }
     finally:
         plt.close(figure)
@@ -417,7 +443,7 @@ def build_large_landowner_bar_data(
 
 def generate_large_landowner_bar_chart_png(
     rows: list[dict[str, Any]],
-    output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "large_landowners_bar_chart.png"),
+    output_path: str | None = None,
     *,
     title: str = LARGE_LANDOWNER_BAR_TITLE,
     top_private_per_woodbasket: int = 5,
@@ -438,6 +464,8 @@ def generate_large_landowner_bar_chart_png(
         series_columns=series_columns,
         output_path=output_path,
         title=title,
+        analysis_component="large_landowners",
+        visual_name="largest_landowners",
         y_label=LARGE_LANDOWNER_BAR_Y_LABEL,
         series_labels=series_labels,
         stacked=False,
@@ -512,7 +540,7 @@ def build_mill_consumption_change_bar_data(
 
 def generate_mill_consumption_change_bar_chart_png(
     rows: list[dict[str, Any]],
-    output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "mill_consumption_changes_bar_chart.png"),
+    output_path: str | None = None,
     *,
     title: str = MILL_CONSUMPTION_BAR_TITLE,
     product_name: str | None = None,
@@ -532,11 +560,14 @@ def generate_mill_consumption_change_bar_chart_png(
         series_columns=series_columns,
         output_path=output_path,
         title=title,
+        analysis_component="mill_consumption_change",
+        visual_name="mill_consumption_change",
         y_label=MILL_CONSUMPTION_BAR_Y_LABEL,
         series_labels=series_labels,
         stacked=False,
         series_colors=series_colors,
         y_divisor=1.0,
+        x_tick_label_rotation=35.0,
     )
 
 
@@ -599,7 +630,7 @@ def build_delivery_by_area_bar_data(
 
 def generate_delivery_by_area_bar_chart_png(
     rows: list[dict[str, Any]],
-    output_path: str = str(DEFAULT_BAR_CHART_OUTPUT_DIR / "delivery_by_area_bar_chart.png"),
+    output_path: str | None = None,
     *,
     title: str = DELIVERY_BY_AREA_BAR_TITLE,
 ) -> dict[str, Any]:
@@ -612,6 +643,8 @@ def generate_delivery_by_area_bar_chart_png(
         series_columns=series_columns,
         output_path=output_path,
         title=title,
+        analysis_component="delivery_by_area",
+        visual_name="delivery_by_area",
         y_label=DELIVERY_BY_AREA_BAR_Y_LABEL,
         series_labels=series_labels,
         stacked=True,

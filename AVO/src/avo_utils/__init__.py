@@ -11,6 +11,7 @@ from .bars import (
     generate_mill_consumption_change_bar_chart_png,
 )
 from .csv import export_csv
+from .io import build_data_export_output_path, build_visual_output_path
 from .maps import generate_webmap_png
 from .pies import (
     build_large_landowner_pie_rows,
@@ -66,4 +67,6 @@ __all__ = [
     "build_mill_consumption_change_rows",
     "build_mill_consumption_change_total_row",
     "export_csv",
+    "build_visual_output_path",
+    "build_data_export_output_path",
 ]

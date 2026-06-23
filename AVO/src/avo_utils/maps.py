@@ -5,8 +5,9 @@ from pathlib import Path
 from typing import Any
 
 from .io import DEFAULT_WEBMAP_OUTPUT_DIR
+from .io import build_visual_output_path
 from .io import ensure_output_directory
-from .io import normalize_output_path
+from .io import resolve_visual_output_path
 
 
 def _get_arcpy_module() -> Any:
@@ -104,8 +105,11 @@ def _apply_zoom_to_layer(layout: Any, extent_layer_name: str | None) -> bool:
 
 def generate_webmap_png(
     map_config: dict[str, Any],
-    output_path: str = str(DEFAULT_WEBMAP_OUTPUT_DIR / "webmap.png"),
+    output_path: str | None = None,
     *,
+    analysis_component: str | None = None,
+    visual_name: str | None = None,
+    export_format: str = "png",
     width: int = 1920,
     height: int = 1080,
 ) -> dict[str, Any]:
@@ -114,7 +118,13 @@ def generate_webmap_png(
     :param map_config: Serialized map configuration data.
     :type map_config: dict[str, Any]
     :param output_path: Destination path for the PNG file.
-    :type output_path: str
+    :type output_path: str | None
+    :param analysis_component: Optional component token used for default filename generation.
+    :type analysis_component: str | None
+    :param visual_name: Optional visual-name token used for default filename generation.
+    :type visual_name: str | None
+    :param export_format: Visual export format, currently ``png`` or ``pdf``.
+    :type export_format: str
     :param width: Desired image width in pixels.
     :type width: int
     :param height: Desired image height in pixels.
@@ -137,7 +147,17 @@ def generate_webmap_png(
     if not template.is_file():
         raise ValueError(f"template_path does not exist: {template}")
 
-    resolved_output = normalize_output_path(output_path, suffix=".png")
+    component_token = analysis_component or str(map_config.get("analysis_component", "")).strip()
+    title_token = visual_name or str(map_config.get("title", "")).strip()
+    resolved_output, resolved_format = resolve_visual_output_path(
+        output_path,
+        default_output_dir=DEFAULT_WEBMAP_OUTPUT_DIR,
+        default_filename_stem="webmap",
+        analysis_component=component_token or None,
+        visual_name=title_token or None,
+        visual_kind="map",
+        export_format=export_format,
+    )
     ensure_output_directory(str(resolved_output))
 
     arcpy = _get_arcpy_module()
@@ -164,9 +184,12 @@ def generate_webmap_png(
     zoom_applied = _apply_zoom_to_layer(layout, extent_layer)
 
     try:
-        layout.exportToPNG(str(resolved_output), **export_options)
+        if resolved_format == "png":
+            layout.exportToPNG(str(resolved_output), **export_options)
+        else:
+            layout.exportToPDF(str(resolved_output), **export_options)
     except TypeError as exc:
-        raise ValueError(f"invalid export_options for ArcPy exportToPNG: {exc}") from exc
+        raise ValueError(f"invalid export_options for ArcPy exportTo{resolved_format.upper()}: {exc}") from exc
 
     return {
         "output_path": str(resolved_output),
@@ -177,4 +200,5 @@ def generate_webmap_png(
         "zoom_applied": zoom_applied,
         "template_path": str(map_config.get("template_path", "")),
         "template_type": str(map_config.get("template_type", "pagx")).lower(),
+        "export_format": resolved_format,
     }
