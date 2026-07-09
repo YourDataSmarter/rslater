@@ -1,0 +1,809 @@
+{
+  "generated_at": "2026-07-09T17:58:55.423614+00:00",
+  "organization": "YourDataSmarter",
+  "repo_count": 2,
+  "options": {
+    "clone_enabled": true,
+    "clone_root": "C:\\Users\\RileySlater\\Projects\\rslater\\test-app\\.cache\\org-repo-clones",
+    "force_reclone": false
+  },
+  "repos": [
+    {
+      "repo": {
+        "name": "windninja-mobile",
+        "full_name": "YourDataSmarter/windninja-mobile",
+        "id": 151600938,
+        "private": false,
+        "archived": false,
+        "disabled": false,
+        "fork": true,
+        "default_branch": "master",
+        "language": "JavaScript",
+        "size_kb": 32092,
+        "topics": [],
+        "visibility": "public",
+        "created_at": "2018-10-04T16:16:54Z",
+        "updated_at": "2018-10-04T16:22:21Z",
+        "pushed_at": "2018-02-05T21:40:10Z",
+        "html_url": "https://github.com/YourDataSmarter/windninja-mobile",
+        "clone_url": "https://github.com/YourDataSmarter/windninja-mobile.git",
+        "ssh_url": "git@github.com:YourDataSmarter/windninja-mobile.git"
+      },
+      "analysis": {
+        "clone_attempted": true,
+        "clone": {
+          "success": true,
+          "already_present": false,
+          "path": ".cache\\org-repo-clones\\windninja-mobile"
+        },
+        "tree_stats": {
+          "total_files": 718,
+          "extension_counts": {
+            ".png": 334,
+            ".svg": 102,
+            ".py": 42,
+            ".jpg": 41,
+            ".js": 29,
+            ".json": 26,
+            ".prj": 20,
+            ".pending": 12,
+            ".asc": 12,
+            ".css": 8,
+            ".sh": 8,
+            ".dbf": 8,
+            ".shp": 8,
+            ".shx": 8,
+            ".md": 6,
+            ".html": 6,
+            ".clean": 6,
+            ".zip": 6,
+            "<no_ext>": 4,
+            ".shx~f0c2b07edf1e4eca12ad93d5ea07b051c1a1f0f4": 4,
+            ".shx~head": 4,
+            ".sln": 2,
+            ".map": 2,
+            ".txt": 2,
+            ".yaml": 2,
+            ".conf": 2,
+            ".defaults": 1,
+            ".xml": 1,
+            ".jsproj": 1,
+            ".properties": 1,
+            ".plist": 1,
+            ".less": 1,
+            ".gif": 1,
+            ".pyproj": 1,
+            ".vrt": 1,
+            ".tif": 1,
+            ".wsgi": 1,
+            ".eot": 1,
+            ".ttf": 1,
+            ".woff": 1
+          }
+        },
+        "config_files": [
+          {
+            "path": ".cache/org-repo-clones/windninja-mobile/WindNinja-Mobile/package.json",
+            "name": "package.json",
+            "type": "node",
+            "package_name": "WindNinja-Mobile",
+            "version": "1.1.3",
+            "has_scripts": false,
+            "dependencies_count": 0,
+            "dev_dependencies_count": 0
+          },
+          {
+            "path": ".cache/org-repo-clones/windninja-mobile/WindNinja-Server/Src/requirements.txt",
+            "name": "requirements.txt",
+            "type": "python",
+            "requirements_count": 1,
+            "sample_requirements": [
+              "Flask<1"
+            ]
+          }
+        ],
+        "source_totals": {
+          "source_file_count": 71,
+          "total_source_lines": 103724,
+          "total_non_empty_source_lines": 89632
+        },
+        "source_file_metrics": [
+          {
+            "path": "WindNinja-Mobile/www/scripts/ol-debug.js",
+            "ext": ".js",
+            "line_count": 67367,
+            "non_empty_line_count": 58392,
+            "function_count": 53,
+            "class_count": 56,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/jquery-1.10.2.js",
+            "ext": ".js",
+            "line_count": 9803,
+            "non_empty_line_count": 8259,
+            "function_count": 71,
+            "class_count": 5,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Mobile/www/scripts/moment.js",
+            "ext": ".js",
+            "line_count": 4463,
+            "non_empty_line_count": 3737,
+            "function_count": 223,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Mobile/www/scripts/windninja.js",
+            "ext": ".js",
+            "line_count": 2811,
+            "non_empty_line_count": 2582,
+            "function_count": 51,
+            "class_count": 1,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/jquery-1.10.2.intellisense.js",
+            "ext": ".js",
+            "line_count": 2671,
+            "non_empty_line_count": 2663,
+            "function_count": 0,
+            "class_count": 17,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/bootstrap.js",
+            "ext": ".js",
+            "line_count": 2014,
+            "non_empty_line_count": 1518,
+            "function_count": 7,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/ogr2ogr.py",
+            "ext": ".py",
+            "line_count": 1701,
+            "non_empty_line_count": 1387,
+            "function_count": 16,
+            "class_count": 4,
+            "import_count": 9
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/modernizr-2.6.2.js",
+            "ext": ".js",
+            "line_count": 1416,
+            "non_empty_line_count": 1130,
+            "function_count": 18,
+            "class_count": 1,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/jquery.validate-vsdoc.js",
+            "ext": ".js",
+            "line_count": 1302,
+            "non_empty_line_count": 1155,
+            "function_count": 3,
+            "class_count": 5,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/jquery.validate.js",
+            "ext": ".js",
+            "line_count": 1245,
+            "non_empty_line_count": 1111,
+            "function_count": 2,
+            "class_count": 3,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Mobile/www/scripts/moment-timezone-with-data.js",
+            "ext": ".js",
+            "line_count": 1201,
+            "non_empty_line_count": 1095,
+            "function_count": 28,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Mobile/www/scripts/ol.js",
+            "ext": ".js",
+            "line_count": 1064,
+            "non_empty_line_count": 1062,
+            "function_count": 960,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/models.py",
+            "ext": ".py",
+            "line_count": 617,
+            "non_empty_line_count": 486,
+            "function_count": 55,
+            "class_count": 13,
+            "import_count": 7
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/ogrinfo.py",
+            "ext": ".py",
+            "line_count": 536,
+            "non_empty_line_count": 426,
+            "function_count": 6,
+            "class_count": 0,
+            "import_count": 6
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/convolve.py",
+            "ext": ".py",
+            "line_count": 527,
+            "non_empty_line_count": 462,
+            "function_count": 15,
+            "class_count": 0,
+            "import_count": 11
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/rastertilemaker.py",
+            "ext": ".py",
+            "line_count": 461,
+            "non_empty_line_count": 404,
+            "function_count": 13,
+            "class_count": 2,
+            "import_count": 13
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/jquery.validate.unobtrusive.js",
+            "ext": ".js",
+            "line_count": 344,
+            "non_empty_line_count": 344,
+            "function_count": 10,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/windninja.py",
+            "ext": ".py",
+            "line_count": 344,
+            "non_empty_line_count": 286,
+            "function_count": 2,
+            "class_count": 0,
+            "import_count": 14
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/respond.js",
+            "ext": ".js",
+            "line_count": 340,
+            "non_empty_line_count": 285,
+            "function_count": 1,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/tests/tests_models.py",
+            "ext": ".py",
+            "line_count": 303,
+            "non_empty_line_count": 240,
+            "function_count": 15,
+            "class_count": 2,
+            "import_count": 3
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/services.py",
+            "ext": ".py",
+            "line_count": 237,
+            "non_empty_line_count": 186,
+            "function_count": 5,
+            "class_count": 0,
+            "import_count": 9
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/gis.py",
+            "ext": ".py",
+            "line_count": 236,
+            "non_empty_line_count": 189,
+            "function_count": 7,
+            "class_count": 0,
+            "import_count": 8
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/wncli.py",
+            "ext": ".py",
+            "line_count": 211,
+            "non_empty_line_count": 172,
+            "function_count": 5,
+            "class_count": 0,
+            "import_count": 13
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/filestore.py",
+            "ext": ".py",
+            "line_count": 188,
+            "non_empty_line_count": 134,
+            "function_count": 11,
+            "class_count": 0,
+            "import_count": 6
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/api.py",
+            "ext": ".py",
+            "line_count": 186,
+            "non_empty_line_count": 145,
+            "function_count": 14,
+            "class_count": 7,
+            "import_count": 8
+          },
+          {
+            "path": "WindNinja-Mobile/merges/windows/scripts/winstore-jscompat.js",
+            "ext": ".js",
+            "line_count": 176,
+            "non_empty_line_count": 156,
+            "function_count": 10,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/model.py",
+            "ext": ".py",
+            "line_count": 139,
+            "non_empty_line_count": 117,
+            "function_count": 4,
+            "class_count": 2,
+            "import_count": 8
+          },
+          {
+            "path": "WindNinja-Server/Src/tests/tests_filestore.py",
+            "ext": ".py",
+            "line_count": 130,
+            "non_empty_line_count": 101,
+            "function_count": 8,
+            "class_count": 1,
+            "import_count": 7
+          },
+          {
+            "path": "WindNinja-Server/Src/ptvs_virtualenv_proxy.py",
+            "ext": ".py",
+            "line_count": 122,
+            "non_empty_line_count": 104,
+            "function_count": 7,
+            "class_count": 0,
+            "import_count": 6
+          },
+          {
+            "path": "WindNinja-Server/Src/deploy.py",
+            "ext": ".py",
+            "line_count": 121,
+            "non_empty_line_count": 99,
+            "function_count": 5,
+            "class_count": 0,
+            "import_count": 5
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaqueue/queue.py",
+            "ext": ".py",
+            "line_count": 119,
+            "non_empty_line_count": 93,
+            "function_count": 6,
+            "class_count": 0,
+            "import_count": 4
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/tilegrabber.py",
+            "ext": ".py",
+            "line_count": 104,
+            "non_empty_line_count": 88,
+            "function_count": 3,
+            "class_count": 0,
+            "import_count": 7
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/utility.py",
+            "ext": ".py",
+            "line_count": 97,
+            "non_empty_line_count": 80,
+            "function_count": 7,
+            "class_count": 1,
+            "import_count": 3
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaqueue/prototype.py",
+            "ext": ".py",
+            "line_count": 86,
+            "non_empty_line_count": 68,
+            "function_count": 3,
+            "class_count": 0,
+            "import_count": 5
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaqueue/manager.py",
+            "ext": ".py",
+            "line_count": 80,
+            "non_empty_line_count": 64,
+            "function_count": 2,
+            "class_count": 0,
+            "import_count": 6
+          },
+          {
+            "path": "WindNinja-Mobile/www/scripts/helpers.js",
+            "ext": ".js",
+            "line_count": 76,
+            "non_empty_line_count": 74,
+            "function_count": 0,
+            "class_count": 1,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/tests/test_queue.py",
+            "ext": ".py",
+            "line_count": 71,
+            "non_empty_line_count": 54,
+            "function_count": 5,
+            "class_count": 1,
+            "import_count": 3
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/config.py",
+            "ext": ".py",
+            "line_count": 69,
+            "non_empty_line_count": 59,
+            "function_count": 0,
+            "class_count": 2,
+            "import_count": 1
+          },
+          {
+            "path": "WindNinja-Server/Src/tests/tests_utility.py",
+            "ext": ".py",
+            "line_count": 64,
+            "non_empty_line_count": 48,
+            "function_count": 6,
+            "class_count": 1,
+            "import_count": 2
+          },
+          {
+            "path": "WindNinja-Server/Src/runload.py",
+            "ext": ".py",
+            "line_count": 53,
+            "non_empty_line_count": 41,
+            "function_count": 2,
+            "class_count": 0,
+            "import_count": 4
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/queue.py",
+            "ext": ".py",
+            "line_count": 52,
+            "non_empty_line_count": 40,
+            "function_count": 3,
+            "class_count": 0,
+            "import_count": 3
+          },
+          {
+            "path": "WindNinja-Server/Data/notification/manage-notifications.py",
+            "ext": ".py",
+            "line_count": 51,
+            "non_empty_line_count": 41,
+            "function_count": 1,
+            "class_count": 0,
+            "import_count": 6
+          },
+          {
+            "path": "WindNinja-Server/Src/tests/tests_config.py",
+            "ext": ".py",
+            "line_count": 48,
+            "non_empty_line_count": 39,
+            "function_count": 3,
+            "class_count": 1,
+            "import_count": 3
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaqueue/windninja.py",
+            "ext": ".py",
+            "line_count": 48,
+            "non_empty_line_count": 39,
+            "function_count": 2,
+            "class_count": 0,
+            "import_count": 4
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/utility.py",
+            "ext": ".py",
+            "line_count": 41,
+            "non_empty_line_count": 36,
+            "function_count": 3,
+            "class_count": 0,
+            "import_count": 4
+          },
+          {
+            "path": "WindNinja-Server/Src/runqueue.py",
+            "ext": ".py",
+            "line_count": 33,
+            "non_empty_line_count": 24,
+            "function_count": 2,
+            "class_count": 0,
+            "import_count": 6
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/views.py",
+            "ext": ".py",
+            "line_count": 33,
+            "non_empty_line_count": 28,
+            "function_count": 3,
+            "class_count": 0,
+            "import_count": 3
+          },
+          {
+            "path": "WindNinja-Mobile/merges/android/scripts/android2.3-jscompat.js",
+            "ext": ".js",
+            "line_count": 30,
+            "non_empty_line_count": 24,
+            "function_count": 0,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaconfig/__init__.py",
+            "ext": ".py",
+            "line_count": 24,
+            "non_empty_line_count": 19,
+            "function_count": 0,
+            "class_count": 1,
+            "import_count": 1
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/jquery-1.10.2.min.js",
+            "ext": ".js",
+            "line_count": 23,
+            "non_empty_line_count": 23,
+            "function_count": 68,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/app.py",
+            "ext": ".py",
+            "line_count": 22,
+            "non_empty_line_count": 17,
+            "function_count": 1,
+            "class_count": 0,
+            "import_count": 8
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjawrapper/logger.py",
+            "ext": ".py",
+            "line_count": 22,
+            "non_empty_line_count": 16,
+            "function_count": 1,
+            "class_count": 0,
+            "import_count": 2
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/bootstrap.min.js",
+            "ext": ".js",
+            "line_count": 21,
+            "non_empty_line_count": 20,
+            "function_count": 7,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/respond.min.js",
+            "ext": ".js",
+            "line_count": 20,
+            "non_empty_line_count": 19,
+            "function_count": 1,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/jquery.validate.unobtrusive.min.js",
+            "ext": ".js",
+            "line_count": 19,
+            "non_empty_line_count": 19,
+            "function_count": 10,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/runserver.py",
+            "ext": ".py",
+            "line_count": 18,
+            "non_empty_line_count": 15,
+            "function_count": 0,
+            "class_count": 0,
+            "import_count": 4
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/jquery.validate.min.js",
+            "ext": ".js",
+            "line_count": 16,
+            "non_empty_line_count": 16,
+            "function_count": 2,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/runtests.py",
+            "ext": ".py",
+            "line_count": 15,
+            "non_empty_line_count": 13,
+            "function_count": 0,
+            "class_count": 0,
+            "import_count": 3
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/static/scripts/_references.js",
+            "ext": ".js",
+            "line_count": 15,
+            "non_empty_line_count": 15,
+            "function_count": 0,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Mobile/www/scripts/jquery-ui.1.12.1.min.js",
+            "ext": ".js",
+            "line_count": 13,
+            "non_empty_line_count": 12,
+            "function_count": 40,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaqueue/enums.py",
+            "ext": ".py",
+            "line_count": 13,
+            "non_empty_line_count": 11,
+            "function_count": 0,
+            "class_count": 2,
+            "import_count": 1
+          },
+          {
+            "path": "WindNinja-Mobile/merges/android/scripts/platformOverrides.js",
+            "ext": ".js",
+            "line_count": 10,
+            "non_empty_line_count": 10,
+            "function_count": 0,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Mobile/merges/windows/scripts/platformOverrides.js",
+            "ext": ".js",
+            "line_count": 10,
+            "non_empty_line_count": 10,
+            "function_count": 0,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Mobile/www/scripts/jquery.mobile-1.4.5.min.js",
+            "ext": ".js",
+            "line_count": 9,
+            "non_empty_line_count": 8,
+            "function_count": 56,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/tests/__init__.py",
+            "ext": ".py",
+            "line_count": 8,
+            "non_empty_line_count": 7,
+            "function_count": 1,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Mobile/www/scripts/jquery-1.12.4.min.js",
+            "ext": ".js",
+            "line_count": 5,
+            "non_empty_line_count": 5,
+            "function_count": 79,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaqueue/__init__.py",
+            "ext": ".py",
+            "line_count": 3,
+            "non_empty_line_count": 3,
+            "function_count": 0,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/__init__.py",
+            "ext": ".py",
+            "line_count": 3,
+            "non_empty_line_count": 3,
+            "function_count": 0,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Mobile/www/scripts/jquery.spin.min.js",
+            "ext": ".js",
+            "line_count": 2,
+            "non_empty_line_count": 2,
+            "function_count": 0,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Mobile/www/scripts/spin.min.js",
+            "ext": ".js",
+            "line_count": 2,
+            "non_empty_line_count": 2,
+            "function_count": 14,
+            "class_count": 0,
+            "import_count": 0
+          },
+          {
+            "path": "WindNinja-Server/Src/windninjaweb/managers.py",
+            "ext": ".py",
+            "line_count": 0,
+            "non_empty_line_count": 0,
+            "function_count": 0,
+            "class_count": 0,
+            "import_count": 0
+          }
+        ]
+      }
+    },
+    {
+      "repo": {
+        "name": "WeatherWidget",
+        "full_name": "YourDataSmarter/WeatherWidget",
+        "id": 1094594011,
+        "private": false,
+        "archived": false,
+        "disabled": false,
+        "fork": false,
+        "default_branch": "main",
+        "language": "CSS",
+        "size_kb": 4,
+        "topics": [],
+        "visibility": "public",
+        "created_at": "2025-11-11T23:17:51Z",
+        "updated_at": "2025-11-12T18:41:15Z",
+        "pushed_at": "2025-11-12T18:41:11Z",
+        "html_url": "https://github.com/YourDataSmarter/WeatherWidget",
+        "clone_url": "https://github.com/YourDataSmarter/WeatherWidget.git",
+        "ssh_url": "git@github.com:YourDataSmarter/WeatherWidget.git"
+      },
+      "analysis": {
+        "clone_attempted": true,
+        "clone": {
+          "success": true,
+          "already_present": false,
+          "path": ".cache\\org-repo-clones\\WeatherWidget"
+        },
+        "tree_stats": {
+          "total_files": 3,
+          "extension_counts": {
+            ".html": 1,
+            ".js": 1,
+            ".css": 1
+          }
+        },
+        "config_files": [],
+        "source_totals": {
+          "source_file_count": 1,
+          "total_source_lines": 51,
+          "total_non_empty_source_lines": 48
+        },
+        "source_file_metrics": [
+          {
+            "path": "main.js",
+            "ext": ".js",
+            "line_count": 51,
+            "non_empty_line_count": 48,
+            "function_count": 3,
+            "class_count": 0,
+            "import_count": 0
+          }
+        ]
+      }
+    }
+  ]
+}
