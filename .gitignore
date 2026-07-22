@@ -9,6 +9,7 @@ __editable__.*
 
 # Python cache
 __pycache__/
+.cache/
 *.py[cod]
 
 # Test / coverage

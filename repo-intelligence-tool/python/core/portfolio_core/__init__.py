@@ -1,0 +1,1 @@
+"""Repo intelligence scanner package."""
