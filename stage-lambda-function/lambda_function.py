@@ -21,7 +21,7 @@ import os
 from datetime import date, datetime
 from typing import Any, Iterable
 
-from stage_zarr_api import query_zarr_array
+from stage_zarr_api import query_zarr_array_from_path
 
 
 def _response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
@@ -137,7 +137,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             if max_records <= 0:
                 raise ValueError("max_records must be greater than zero")
 
-        df = query_zarr_array(
+        df = query_zarr_array_from_path(
             zarr_path=zarr_path,
             group_name=str(group_name),
             data_array_name=str(data_array_name),
